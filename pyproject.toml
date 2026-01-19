@@ -1,0 +1,24 @@
+[project]
+name = "voice-symptom-triage-assistant"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "accelerate==0.27.0",
+    "fastapi==0.109.0",
+    "huggingface-hub>=1.3.2",
+    "librosa==0.10.1",
+    "noisereduce==3.0.0",
+    "pydantic==2.6.0",
+    "pydantic-settings==2.1.0",
+    "python-dotenv==1.0.1",
+    "python-multipart==0.0.9",
+    "soundfile==0.12.1",
+    "torch==2.2.0",
+    "transformers",
+    "uvicorn[standard]==0.27.0",
+]
+
+[tool.uv.sources]
+transformers = { git = "https://github.com/huggingface/transformers.git", rev = "65dc261512cbdb1ee72b88ae5b222f2605aad8e5" }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Symptom Intake & Documentation Assistant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎙️ Voice Symptom Intake Assistant</h1>
+            <p class="subtitle">Administrative Documentation Support for Direct Care AI</p>
+            
+            <!-- Compliance Notice -->
+            <div class="compliance-notice">
+                <strong>⚠️ COMPLIANCE NOTICE:</strong> This system provides administrative documentation support only.
+                It does NOT perform clinical triage, provide medical advice, or make clinical decisions.
+                All outputs require review by qualified healthcare professionals.
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Recording Section -->
+            <section class="recording-section">
+                <h2>Record or Upload Symptom Report</h2>
+                
+                <!-- Audio Recording Controls -->
+                <div class="audio-controls">
+                    <button id="recordBtn" class="btn btn-record">
+                        <span class="btn-icon">🎤</span>
+                        Start Recording
+                    </button>
+                    <button id="stopBtn" class="btn btn-stop" disabled>
+                        <span class="btn-icon">⏹️</span>
+                        Stop Recording
+                    </button>
+                    <button id="playBtn" class="btn btn-play" disabled>
+                        <span class="btn-icon">▶️</span>
+                        Play Recording
+                    </button>
+                </div>
+
+                <!-- Audio Visualizer -->
+                <div id="audioVisualizer" class="audio-visualizer">
+                    <canvas id="visualizerCanvas" width="600" height="100"></canvas>
+                </div>
+
+                <!-- OR Divider -->
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- File Upload -->
+                <div class="file-upload">
+                    <label for="audioFile" class="upload-label">
+                        <span class="upload-icon">📁</span>
+                        Upload Audio File
+                    </label>
+                    <input type="file" id="audioFile" accept="audio/*" class="file-input">
+                    <p class="file-name" id="fileName">No file selected</p>
+                </div>
+
+                <!-- Submit Button -->
+                <button id="submitBtn" class="btn btn-primary" disabled>
+                    Generate Documentation
+                </button>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h2>Documentation Results</h2>
+
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Processing audio and generating documentation...</p>
+                </div>
+
+                <!-- Transcription -->
+                <div class="result-card" id="transcriptionCard" style="display: none;">
+                    <h3>📝 Transcription</h3>
+                    <div id="transcriptionText" class="transcription-text"></div>
+                    <p class="duration-info">Duration: <span id="audioDuration">0</span> seconds</p>
+                </div>
+
+                <!-- Documentation -->
+                <div class="result-card" id="documentationCard" style="display: none;">
+                    <h3>📋 Structured Documentation</h3>
+                    
+                    <!-- Clinician Review Notice -->
+                    <div class="review-notice">
+                        <strong>🔍 Requires Clinician Review</strong>
+                        <p>This documentation must be reviewed and finalized by a qualified healthcare professional.</p>
+                    </div>
+
+                    <!-- Chief Complaint -->
+                    <div class="doc-section">
+                        <h4>Chief Complaint</h4>
+                        <p id="chiefComplaint"></p>
+                    </div>
+
+                    <!-- Symptom Details -->
+                    <div class="doc-section">
+                        <h4>Symptom Details</h4>
+                        <div id="symptomDetails"></div>
+                    </div>
+
+                    <!-- SOAP Note -->
+                    <div class="doc-section">
+                        <h4>SOAP Note - Subjective Section</h4>
+                        <div id="soapNote" class="soap-note"></div>
+                    </div>
+
+                    <!-- Export Buttons -->
+                    <div class="export-buttons">
+                        <button id="exportJsonBtn" class="btn btn-secondary">
+                            Export as JSON
+                        </button>
+                        <button id="copyBtn" class="btn btn-secondary">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div class="error-card" id="errorCard" style="display: none;">
+                    <h3>❌ Error</h3>
+                    <p id="errorText"></p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Direct Care AI | Voice Symptom Intake & Documentation Assistant v1.0</p>
+            <p class="footer-disclaimer">
+                Administrative tool only. Not for clinical decision-making.
+            </p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

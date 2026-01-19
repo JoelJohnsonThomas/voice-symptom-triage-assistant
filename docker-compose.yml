@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # CPU-only service (for development/testing)
+  app-cpu:
+    build:
+      context: .
+      target: cpu
+    container_name: symptom-intake-cpu
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - MODEL_CACHE_DIR=/app/models
+      - DEVICE=cpu
+      - ENABLE_GPU=false
+    volumes:
+      - ./app:/app/app
+      - ./models:/app/models
+      - ./test_data:/app/test_data
+    restart: unless-stopped
+    profiles:
+      - cpu
+
+  # GPU-enabled service (for production)
+  app-gpu:
+    build:
+      context: .
+      target: gpu
+    container_name: symptom-intake-gpu
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - MODEL_CACHE_DIR=/app/models
+      - DEVICE=cuda
+      - ENABLE_GPU=true
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./app:/app/app
+      - ./models:/app/models
+      - ./test_data:/app/test_data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    profiles:
+      - gpu
+
+networks:
+  default:
+    name: symptom-intake-network
