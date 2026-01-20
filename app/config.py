@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     device: Literal["cuda", "cpu"] = "cpu"
     enable_gpu: bool = False
     
+    # MedGemma Generation Parameters
+    medgemma_temperature: float = 0.1  # Low temperature for deterministic JSON output
+    medgemma_max_tokens: int = 1024  # Sufficient for complete documentation
+    medgemma_repetition_penalty: float = 1.1  # Prevent repetitive output
+    
     # Audio
     max_audio_duration_seconds: int = 300
     audio_sample_rate: int = 16000

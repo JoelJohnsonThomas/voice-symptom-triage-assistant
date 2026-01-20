@@ -10,23 +10,49 @@ SYMPTOM_DOCUMENTATION_PROMPT = """You are a medical documentation assistant. You
 
 Patient Statement: {transcript}
 
-Generate a structured documentation summary in JSON format with the following structure:
+YOU MUST RESPOND WITH VALID JSON ONLY. Start your response with {{ and end with }}.
 
+Generate a structured documentation summary using this EXACT JSON format:
+
+```json
 {{
   "chief_complaint": "Patient's main concern in their own words",
   "symptom_details": {{
     "symptoms_mentioned": ["list", "of", "symptoms"],
     "onset": "When symptoms started (as reported by patient)",
     "duration": "How long symptoms have lasted",
-    "location": "Where symptoms are located (if mentioned)",
-    "quality": "Patient's description of symptom characteristics",
-    "severity_description": "Patient's own description (NOT a clinical assessment)",
+    "location": "Where symptoms are located (if mentioned, or 'not specified')",
+    "quality": "Patient's description of symptom characteristics (or 'not specified')",
+    "severity_description": "Patient's own description (NOT a clinical assessment, or 'not specified')",
     "associated_symptoms": ["other", "related", "symptoms"],
-    "aggravating_factors": "What makes it worse (if mentioned)",
-    "alleviating_factors": "What makes it better (if mentioned)"
+    "aggravating_factors": "What makes it worse (if mentioned, or 'not specified')",
+    "alleviating_factors": "What makes it better (if mentioned, or 'not specified')"
   }},
-  "soap_note_subjective": "Well-formatted Subjective section of SOAP note using patient's statements. Include: Chief complaint, history of present illness with timeline, and relevant details as reported by patient."
+  "soap_note_subjective": "Well-formatted Subjective section of SOAP note"
 }}
+```
+
+EXAMPLE - Given patient statement: "I've had a severe headache and nausea for 3 hours"
+
+Your response should be:
+
+```json
+{{
+  "chief_complaint": "headache and nausea",
+  "symptom_details": {{
+    "symptoms_mentioned": ["headache", "nausea"],
+    "onset": "3 hours ago",
+    "duration": "3 hours",
+    "location": "not specified",
+    "quality": "severe",
+    "severity_description": "severe",
+    "associated_symptoms": ["headache", "nausea"],
+    "aggravating_factors": "not specified",
+    "alleviating_factors": "not specified"
+  }},
+  "soap_note_subjective": "Patient reports experiencing headache and nausea that began approximately 3 hours ago. Patient describes the headache as severe. No additional aggravating or alleviating factors were mentioned."
+}}
+```
 
 CRITICAL RULES - YOU MUST FOLLOW THESE:
 
@@ -38,17 +64,19 @@ DO NOT:
 - Classify the condition
 - Determine care priority
 - Route or triage the patient
+- Include ANY text before or after the JSON object
 
 DO:
 - Extract information verbatim from patient's statement
-- Structure the timeline as described
+- Use "not specified" for missing information
 - Use patient's own words for descriptions
 - Create clear, organized documentation
 - Write in standard medical documentation format
+- Start your response immediately with {{
 
 Remember: This is ADMINISTRATIVE documentation support only. All clinical decisions must be made by qualified healthcare professionals who will review this documentation.
 
-Respond ONLY with the JSON object. Do not include any other text."""
+RESPOND ONLY WITH THE JSON OBJECT. NO EXPLANATIONS. NO MARKDOWN FENCES. JUST THE JSON."""
 
 
 def create_documentation_prompt(transcript: str) -> str:

@@ -63,6 +63,96 @@ class MedGemmaService:
             logger.error(f"Failed to load MedGemma model: {e}")
             raise
     
+    def _extract_json_from_response(self, text: str) -> str:
+        """
+        Extract JSON from model response, handling various formats.
+        
+        Args:
+            text: Raw model response
+            
+        Returns:
+            Extracted JSON string
+        """
+        import re
+        
+        # Remove prompt echo if present (common with instruction models)
+        # Look for the actual JSON output after the prompt
+        if "Patient Statement:" in text:
+            # Split after the prompt and take the response part
+            parts = text.split("RESPOND ONLY WITH THE JSON OBJECT")
+            if len(parts) > 1:
+                text = parts[-1]
+        
+        # Try to extract JSON from markdown code fence
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        if json_match:
+            return json_match.group(1).strip()
+        
+        # Try to find JSON object directly (between curly braces)
+        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        if json_match:
+            return json_match.group(0).strip()
+        
+        # Return as-is if no pattern found
+        return text.strip()
+    
+    def _extract_fields_from_text(self, text: str, transcript: str) -> Dict[str, Any]:
+        """
+        Fallback: Extract fields from unstructured text when JSON parsing fails.
+        
+        Args:
+            text: Raw model response
+            transcript: Original patient transcript
+            
+        Returns:
+            Dictionary with extracted documentation fields
+        """
+        import re
+        
+        # Try to extract chief complaint
+        chief_complaint = "unknown"
+        cc_match = re.search(r'"?chief_complaint"?\s*[:=]\s*"([^"]+)"', text, re.IGNORECASE)
+        if cc_match:
+            chief_complaint = cc_match.group(1)
+        else:
+            # Extract first sentence from transcript as fallback
+            sentences = transcript.split('.')
+            if sentences:
+                chief_complaint = sentences[0].strip()
+        
+        # Try to extract SOAP note
+        soap_note = ""
+        soap_match = re.search(r'"?soap_note_subjective"?\s*[:=]\s*"([^"]+)"', text, re.IGNORECASE)
+        if soap_match:
+            soap_note = soap_match.group(1)
+        else:
+            # Generate basic SOAP note from transcript
+            soap_note = f"Patient reports: {transcript}"
+        
+        # Try to extract symptoms
+        symptoms = []
+        symptoms_match = re.search(r'"?symptoms_mentioned"?\s*[:=]\s*\[(.*?)\]', text, re.DOTALL)
+        if symptoms_match:
+            symptoms_text = symptoms_match.group(1)
+            symptoms = [s.strip().strip('"\'') for s in symptoms_text.split(',')]
+        
+        return {
+            "chief_complaint": chief_complaint,
+            "symptom_details": {
+                "symptoms_mentioned": symptoms if symptoms else ["not specified"],
+                "onset": "not specified",
+                "duration": "not specified",
+                "location": "not specified",
+                "quality": "not specified",
+                "severity_description": "not specified",
+                "associated_symptoms": symptoms if symptoms else ["not specified"],
+                "aggravating_factors": "not specified",
+                "alleviating_factors": "not specified"
+            },
+            "soap_note_subjective": soap_note,
+            "parsing_method": "text_extraction_fallback"
+        }
+    
     def generate_documentation(self, transcript: str) -> Dict[str, Any]:
         """
         Generate structured symptom documentation from transcript.
@@ -92,23 +182,31 @@ class MedGemmaService:
                 padding=True
             ).to(self.model.device)
             
-            # Generate
+            # Generate with improved parameters
             with torch.inference_mode():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=512,
-                    do_sample=False,
+                    max_new_tokens=settings.medgemma_max_tokens,
+                    temperature=settings.medgemma_temperature,
+                    repetition_penalty=settings.medgemma_repetition_penalty,
+                    do_sample=True if settings.medgemma_temperature > 0 else False,
                     pad_token_id=self.tokenizer.eos_token_id
                 )
             
             # Decode output
             decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
-            logger.info("Documentation generated successfully")
+            logger.info(f"Raw model output (length={len(decoded)}): {decoded[:200]}...")
+            
+            # Extract JSON from response
+            json_text = self._extract_json_from_response(decoded)
+            
+            logger.info(f"Extracted JSON text (length={len(json_text)}): {json_text[:200]}...")
             
             # Parse JSON response
             try:
-                documentation = json.loads(decoded)
+                documentation = json.loads(json_text)
+                logger.info("Successfully parsed JSON response")
                 
                 # Ensure compliance fields are present
                 documentation["requires_clinician_review"] = True
@@ -116,6 +214,7 @@ class MedGemmaService:
                     "This is administrative documentation only. "
                     "All clinical decisions must be made by qualified healthcare professionals."
                 )
+                documentation["parsing_method"] = "json_successful"
                 
                 # Remove any urgency/severity fields if present (compliance)
                 documentation.pop("urgency", None)
@@ -125,16 +224,23 @@ class MedGemmaService:
                 
                 return documentation
                 
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse JSON response, returning raw text")
-                return {
-                    "raw_documentation": decoded,
-                    "requires_clinician_review": True,
-                    "compliance_notice": (
-                        "This is administrative documentation only. "
-                        "All clinical decisions must be made by qualified healthcare professionals."
-                    )
-                }
+            except json.JSONDecodeError as je:
+                logger.warning(f"Failed to parse JSON response: {je}, attempting text extraction")
+                
+                # Fallback: Extract fields from unstructured text
+                documentation = self._extract_fields_from_text(decoded, transcript)
+                
+                # Add compliance fields
+                documentation["requires_clinician_review"] = True
+                documentation["compliance_notice"] = (
+                    "This is administrative documentation only. "
+                    "All clinical decisions must be made by qualified healthcare professionals."
+                )
+                documentation["raw_text"] = decoded
+                
+                logger.info(f"Extracted documentation using fallback method: {list(documentation.keys())}")
+                
+                return documentation
             
         except Exception as e:
             logger.error(f"Documentation generation failed: {e}")
