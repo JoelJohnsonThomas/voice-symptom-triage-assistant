@@ -188,6 +188,7 @@ class MedGemmaService:
         # Enhanced time patterns (now work with converted numbers)
         time_patterns = [
             (r'for\s+(?:the\s+)?past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'for\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),  # Simple "for a week"
             (r'(\d+)\s*(day|days|hour|hours|week|weeks|month|months)\s+ago', 'onset'),
             (r'since\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
             (r'past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
