@@ -154,7 +154,7 @@ class MedGemmaService:
             'joint pain': ['joint pain', 'joints hurt', 'arthritis', 'joint ache'],
             'body aches': ['body aches', 'achy all over', 'everything hurts', 'muscle aches'],
             'muscle weakness': ['muscle weakness', 'weak muscles', 'muscles feel weak'],
-            'vision problems': ['blurry vision', 'vision blurry', "can't see", 'blurred vision'],
+            'vision problems': ['blurry vision', 'vision blurry', 'blurry', "can't see", 'blurred vision', 'blurred'],
             
             # Single-word primary symptoms
             'headache': ['headache', 'head pain', 'migraine', 'my head hurts', 'head hurts'],
