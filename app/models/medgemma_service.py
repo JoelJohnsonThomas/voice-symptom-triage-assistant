@@ -298,6 +298,8 @@ class MedGemmaService:
             # Handle different onset types for natural phrasing
             if onset == "chronic":
                 soap_parts.append(f"present for {duration}")
+            elif onset == "all day":
+                soap_parts.append("present all day")
             elif onset.startswith("since"):
                 soap_parts.append(f"{onset}")
             else:
