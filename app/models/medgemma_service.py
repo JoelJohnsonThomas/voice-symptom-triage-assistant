@@ -231,8 +231,22 @@ class MedGemmaService:
             # Import prompt here to avoid circular dependency
             from app.prompts.documentation_prompts import create_documentation_prompt
             
-            # Create prompt
-            prompt = create_documentation_prompt(transcript)
+            # Create prompt content
+            prompt_content = create_documentation_prompt(transcript)
+            
+            # MedGemma 1.5 is a chat model - use chat template
+            messages = [
+                {"role": "user", "content": prompt_content}
+            ]
+            
+            # Apply chat template
+            prompt = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+            
+            logger.info(f"Formatted prompt (first 200 chars): {prompt[:200]}...")
             
             # Tokenize input
             inputs = self.tokenizer(
