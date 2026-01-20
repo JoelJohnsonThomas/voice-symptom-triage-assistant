@@ -33,31 +33,41 @@ class MedGemmaService:
         try:
             logger.info(f"Loading MedGemma model on device: {self.device}")
             
-            # MedGemma 1.5 4B (4.96GB) exceeds GTX 1650's 4GB VRAM
-            # Force CPU execution to avoid VRAM overflow
-            logger.warning("MedGemma running on CPU due to VRAM constraints (4.96GB model > 4GB VRAM)")
+            # Determine optimal dtype based on device
+            if settings.enable_gpu and torch.cuda.is_available():
+                # Use float16 on GPU to reduce VRAM usage (4.96GB -> ~2.5GB)
+                dtype = torch.float16
+                logger.info("Using float16 precision on GPU for memory efficiency")
+            else:
+                # Use float32 on CPU
+                dtype = torch.float32
+                logger.info("Using float32 precision on CPU")
             
             self.tokenizer = AutoTokenizer.from_pretrained(
                 settings.medgemma_model,
                 token=settings.hf_token if settings.hf_token else None
             )
             
-            # Load with float32 on CPU
+            # Load model with appropriate settings
             self.model = AutoModelForCausalLM.from_pretrained(
                 settings.medgemma_model,
-                torch_dtype=torch.float32,
-                device_map=None,  # Disable auto device mapping
+                torch_dtype=dtype,
+                device_map="auto" if settings.enable_gpu and torch.cuda.is_available() else None,
                 token=settings.hf_token if settings.hf_token else None,
-                low_cpu_mem_usage=True  # Optimize CPU memory usage
+                low_cpu_mem_usage=True
             )
             
-            # Force model to CPU
-            self.model = self.model.to("cpu")
-            self.device = "cpu"
+            # Manual device placement if not using device_map
+            if not (settings.enable_gpu and torch.cuda.is_available()):
+                self.model = self.model.to("cpu")
+                self.device = "cpu"
+                logger.info("MedGemma running on CPU (GPU disabled or unavailable)")
+            else:
+                logger.info(f"MedGemma running on GPU with device_map=auto")
             
             self.model.eval()
             
-            logger.info("MedGemma model loaded successfully")
+            logger.info(f"MedGemma model loaded successfully on {self.device}")
             
         except Exception as e:
             logger.error(f"Failed to load MedGemma model: {e}")
