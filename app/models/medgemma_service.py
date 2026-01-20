@@ -314,14 +314,16 @@ class MedGemmaService:
         # Extract location if mentioned
         location = "not specified"
         location_patterns = [
-            r'in\s+(?:my\s+)?(knee|knees|leg|legs|arm|arms|back|chest|head|stomach|neck|shoulder|hip)',
-            r'on\s+(?:my\s+)?(arms?|legs?|face|back|chest|hands?|feet)',
+            r'in\s+(?:my\s+)?(knees|knee|legs|leg|arms|arm|back|chest|head|stomach|neck|shoulders|shoulder|hips|hip)',
+            r'on\s+(?:my\s+)?(arms|arm|legs|leg|face|back|chest|hands|hand|feet|foot)',
             r'(left|right)\s+(arm|leg|side|eye|ear)',
         ]
         for pattern in location_patterns:
             match = re.search(pattern, transcript_clean)
             if match:
                 location = match.group(0).replace('my ', '')
+                # Add location to SOAP note
+                soap_parts.append(location)
                 break
         
         soap_note = ", ".join(soap_parts) + "."
