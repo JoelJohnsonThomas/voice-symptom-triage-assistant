@@ -123,7 +123,8 @@ class MedGemmaService:
     
     def _extract_fields_from_text(self, text: str, transcript: str) -> Dict[str, Any]:
         """
-        Extract fields from conversational text with markdown cleanup.
+        Extract fields ONLY from original transcript with AI output as context.
+        PREVENTS HALLUCINATIONS by validating against source.
         
         Args:
             text: Raw model response (may contain markdown)
@@ -134,88 +135,70 @@ class MedGemmaService:
         """
         import re
         
-        # Clean markdown formatting from model output
-        cleaned_text = text
-        cleaned_text = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_text)  # Remove **bold**
-        cleaned_text = re.sub(r'_(.*?)_', r'\1', cleaned_text)        # Remove _italic_
-        cleaned_text = re.sub(r'`(.*?)`', r'\1', cleaned_text)        # Remove `code`
-        cleaned_text = re.sub(r'^\d+\.\s*', '', cleaned_text, flags=re.MULTILINE)  # Remove numbered lists
+        # Clean inputs
+        transcript_clean = transcript.lower().strip()
+        ai_output_clean = text.lower().strip()
         
-        # Common symptom keywords
-        symptom_keywords = [
-            "headache", "migraine", "pain", "ache",
-            "nausea", "vomiting", "sick",
-            "fever", "temperature", "hot", "chills",
-            "dizziness", "dizzy", "lightheaded",
-            "cough", "congestion", "cold",
-            "fatigue", "tired", "weak",
-            "rash", "itching", "swelling"
-        ]
+        # Symptom mapping: canonical name -> variations to search for
+        # CRITICAL: Ordered by specificity (longer/more specific terms first)
+        symptom_map = {
+            'shortness of breath': ['shortness of breath', 'short of breath', 'difficulty breathing', 'hard to breathe'],
+            'headache': ['headache', 'head pain', 'migraine'],
+            'nausea': ['nausea', 'sick to stomach', 'queasy', 'nauseated'],
+            'vomiting': ['vomiting', 'vomit', 'throwing up'],
+            'fever': ['fever', 'temperature', 'febrile'],
+            'chills': ['chills', 'chilly'],
+            'cough': ['cough', 'coughing'],
+            'dizziness': ['dizzy', 'dizziness', 'lightheaded'],
+            'fatigue': ['fatigue', 'tired', 'exhausted', 'weak', 'weakness'],
+            'rash': ['rash', 'skin rash'],
+            'congestion': ['congestion', 'congested', 'stuffy nose'],
+            'pain': ['pain', 'painful', 'hurts', 'hurting', 'sore'],
+        }
         
-        # Extract chief complaint
-        chief_complaint = "not specified"
-        symptoms_found = []
+        # CRITICAL: Extract symptoms from TRANSCRIPT ONLY using word boundaries
+        confirmed_symptoms = []
+        for symptom, variations in symptom_map.items():
+            for variation in variations:
+                # Use word boundaries to prevent substring matches
+                # This prevents "ache" from matching within "headache"
+                if re.search(rf'\b{re.escape(variation)}\b', transcript_clean):
+                    confirmed_symptoms.append(symptom)
+                    break  # Found this symptom, move to next
         
-        # Check both transcript and model response
-        combined_text = (transcript + " " + cleaned_text).lower()
-        for keyword in symptom_keywords:
-            if keyword in combined_text:
-                symptoms_found.append(keyword)
+        # Build chief complaint from confirmed symptoms only
+        chief_complaint = ", ".join(confirmed_symptoms[:3]) if confirmed_symptoms else "not clearly specified"
         
-        if symptoms_found:
-            chief_complaint = ", ".join(symptoms_found[:3])  # Top 3 symptoms
-        else:
-            # Try extracting from "Main Symptom:" pattern
-            symptom_match = re.search(r'(?:main symptom|chief complaint)[:\s]*([^\.\n]+)', cleaned_text, re.IGNORECASE)
-            if symptom_match:
-                chief_complaint = symptom_match.group(1).strip()
-            else:
-                # Use first meaningful phrase from transcript
-                words = transcript.strip().split()
-                if len(words) > 0:
-                    chief_complaint = " ".join(words[:5])
-        
-        # Extract timing information
-        onset = "not specified"
+        # Extract timing information from TRANSCRIPT (not AI output)
         duration = "not specified"
+        onset = "not specified"
         
-        # Enhanced time patterns
         time_patterns = [
-            (r'started\s+(\d+\s+(?:days?|hours?|weeks?))\s+ago', 'started'),
-            (r'for\s+(?:the\s+)?past\s+(\d+\s+(?:days?|hours?|weeks?))', 'duration'),
-            (r'(?:for|over|since)\s+(\d+\s+(?:days?|hours?|weeks?))', 'duration'),
-            (r'(\d+)\s+(days?|hours?|weeks?)', 'duration')
+            (r'for\s+(?:the\s+)?past\s+(\d+\s+(?:day|days|hour|hours|week|weeks))', 'duration'),
+            (r'(\d+)\s+(day|days|hour|hours|week|weeks)\s+ago', 'onset'),
+            (r'since\s+(\d+\s+(?:day|days|hour|hours|week|weeks))\s+ago', 'onset'),
         ]
         
         for pattern, match_type in time_patterns:
-            match = re.search(pattern, combined_text, re.IGNORECASE)
+            match = re.search(pattern, transcript_clean)
             if match:
-                time_value = match.group(1)
-                if match_type == 'started':
-                    onset = time_value
-                    duration = time_value
+                if match_type == 'duration':
+                    duration = match.group(1)
+                    onset = f"{duration} ago"
                 else:
-                    duration = time_value
-                    onset = duration + " ago" if "ago" not in duration else duration
+                    onset = match.group(0)
+                    duration = match.group(1)
                 break
         
-        # Build clean SOAP note from model output + extracted info
+        # Build SOAP note from VALIDATED information only
         soap_parts = []
-        
-        if symptoms_found:
+        if confirmed_symptoms:
             soap_parts.append(f"Patient reports {chief_complaint}")
+        else:
+            soap_parts.append(f"Patient describes symptoms")
         
         if duration != "not specified":
-            soap_parts.append(f"symptoms present for {duration}")
-        
-        # Add relevant excerpts from model output (first clean sentence)
-        sentences = [s.strip() for s in re.split(r'[\.!?]', cleaned_text) if s.strip()]
-        if sentences and len(soap_parts) < 2:
-            # Add first informative sentence from model
-            for sent in sentences[:2]:
-                if len(sent) > 10 and any(word in sent.lower() for word in ['symptom', 'patient', 'report']):
-                    soap_parts.append(sent)
-                    break
+            soap_parts.append(f"present for {duration}")
         
         soap_note = ". ".join(soap_parts).strip()
         if not soap_note.endswith('.'):
@@ -224,19 +207,51 @@ class MedGemmaService:
         return {
             "chief_complaint": chief_complaint,
             "symptom_details": {
-                "symptoms_mentioned": symptoms_found if symptoms_found else ["not specified"],
+                "symptoms_mentioned": confirmed_symptoms if confirmed_symptoms else ["not specified"],
                 "onset": onset,
                 "duration": duration,
                 "location": "not specified",
                 "quality": "not specified",
                 "severity_description": "not specified",
-                "associated_symptoms": symptoms_found if symptoms_found else ["not specified"],
+                "associated_symptoms": confirmed_symptoms if confirmed_symptoms else ["not specified"],
                 "aggravating_factors": "not specified",
                 "alleviating_factors": "not specified"
             },
             "soap_note_subjective": soap_note,
-            "parsing_method": "text_extraction"
+            "parsing_method": "transcript_validated",
+            "ai_output_used": False  # We are NOT using AI output for symptom extraction
         }
+    
+    def _validate_output(self, documentation: Dict, original_transcript: str) -> tuple[bool, str]:
+        """
+        Validate documentation output before returning.
+        Returns: (is_valid, error_message)
+        """
+        # Check 1: Chief complaint not empty placeholder
+        cc = documentation.get("chief_complaint", "")
+        if not cc or cc == "not specified":
+            return False, "Failed to extract chief complaint"
+        
+        # Check 2: SOAP note not truncated or malformed
+        soap = documentation.get("soap_note_subjective", "")
+        if len(soap) < 10:
+            return False, "SOAP note too short"
+        if any(marker in soap for marker in ["...", "1.**", "2.**", "Here's the"]):
+            return False, "SOAP note contains artifacts or truncation markers"
+        
+        # Check 3: All symptoms in chief complaint appear in transcript
+        symptoms = [s.strip() for s in cc.split(',')]
+        transcript_lower = original_transcript.lower()
+        for symptom in symptoms:
+            if symptom not in ["not specified", "not clearly specified"]:
+                # Check if symptom or close variation appears in transcript
+                # This prevents hallucinations
+                if symptom not in transcript_lower:
+                    # Allow for variations like "headache" in transcript but "head pain" extracted
+                    # But flag clear mismatches
+                    return False, f"Symptom '{symptom}' not found in transcript - possible hallucination"
+        
+        return True, ""
     
     def generate_documentation(self, transcript: str) -> Dict[str, Any]:
         """
@@ -300,6 +315,21 @@ class MedGemmaService:
             
             # Extract documentation from conversational text
             documentation = self._extract_fields_from_text(decoded, transcript)
+            
+            # CRITICAL: Validate output before returning
+            is_valid, error_msg = self._validate_output(documentation, transcript)
+            if not is_valid:
+                logger.warning(f"Documentation validation failed: {error_msg}")
+                # Return safe fallback - just the transcript
+                return {
+                    "chief_complaint": "not specified",
+                    "symptom_details": {"symptoms_mentioned": ["not specified"]},
+                    "soap_note_subjective": f"Patient statement: {transcript}",
+                    "validation_failed": True,
+                    "validation_error": error_msg,
+                    "requires_clinician_review": True,
+                    "compliance_notice": "Validation failed. Raw transcript provided for manual review."
+                }
             
             # Ensure compliance fields are present
             documentation["requires_clinician_review"] = True

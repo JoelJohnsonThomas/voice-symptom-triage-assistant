@@ -102,6 +102,13 @@ class MedASRService:
             )
             
             transcript = result["text"]
+            
+            # Clean up special tokens and artifacts
+            import re
+            transcript = re.sub(r'</?s>|<unk>|<pad>', '', transcript)  # Remove special tokens
+            transcript = transcript.strip().lstrip('.,;:!? ')  # Remove leading punctuation/whitespace
+            transcript = ' '.join(transcript.split())  # Normalize whitespace
+            
             logger.info(f"Transcription complete: {len(transcript)} characters")
             
             return transcript

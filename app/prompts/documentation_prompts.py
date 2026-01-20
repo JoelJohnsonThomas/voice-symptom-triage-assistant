@@ -6,21 +6,10 @@ These prompts are designed to extract and structure information ONLY.
 They explicitly prohibit clinical decision-making, triage, or urgency assessment.
 """
 
-SYMPTOM_DOCUMENTATION_PROMPT = """Based on this patient statement, please provide the symptom information:
-
-Statement: "{transcript}"
-
-Please provide:
-1. What is the main symptom or complaint?
-2. When did it start and how long has it lasted?
-3. Any other relevant details the patient mentioned?
-
-Answer concisely."""
-
-
 def create_documentation_prompt(transcript: str) -> str:
     """
-    Create a compliant documentation prompt for MedGemma.
+    Create clean, direct prompt without chat artifacts.
+    Cleans transcript before formatting to remove ASR artifacts.
     
     Args:
         transcript: Patient's symptom report
@@ -28,4 +17,17 @@ def create_documentation_prompt(transcript: str) -> str:
     Returns:
         Formatted prompt string
     """
-    return SYMPTOM_DOCUMENTATION_PROMPT.format(transcript=transcript)
+    # Clean the transcript first - remove ASR special tokens
+    clean_transcript = transcript.replace("</s>", "").replace("<s>", "").strip().lstrip('.')
+    
+    # Simple, direct instruction with no chat template tokens
+    return f"""Analyze this patient statement for medical documentation.
+
+Patient Statement: "{clean_transcript}"
+
+Extract ONLY information explicitly mentioned:
+- Main symptoms (list only symptoms the patient stated)
+- Duration or onset (if mentioned)
+- Associated details (if mentioned)
+
+Do not add symptoms not stated. Use plain English, no markdown formatting."""
