@@ -142,18 +142,38 @@ class MedGemmaService:
         # Symptom mapping: canonical name -> variations to search for
         # CRITICAL: Ordered by specificity (longer/more specific terms first)
         symptom_map = {
-            'shortness of breath': ['shortness of breath', 'short of breath', 'difficulty breathing', 'hard to breathe'],
-            'headache': ['headache', 'head pain', 'migraine'],
-            'nausea': ['nausea', 'sick to stomach', 'queasy', 'nauseated'],
-            'vomiting': ['vomiting', 'vomit', 'throwing up'],
-            'fever': ['fever', 'temperature', 'febrile'],
-            'chills': ['chills', 'chilly'],
+            # Multi-word symptoms (check first - more specific)
+            'shortness of breath': ['shortness of breath', 'short of breath', 'difficulty breathing', 
+                                    'hard to breathe', "can't breathe", "can't catch my breath"],
+            'sore throat': ['sore throat', 'throat pain', 'throat hurts', 'scratchy throat'],
+            'back pain': ['back pain', 'back hurts', 'backache', 'lower back'],
+            'stomach ache': ['stomach ache', 'stomach pain', 'tummy trouble', 'abdominal pain', 
+                            'belly pain', 'stomach hurts'],
+            'chest pain': ['chest pain', 'chest discomfort', 'chest tightness', 'chest hurts'],
+            'ear pain': ['ear pain', 'earache', 'ear hurts'],
+            'joint pain': ['joint pain', 'joints hurt', 'arthritis', 'joint ache'],
+            'body aches': ['body aches', 'achy all over', 'everything hurts', 'muscle aches'],
+            'muscle weakness': ['muscle weakness', 'weak muscles', 'muscles feel weak'],
+            'vision problems': ['blurry vision', 'vision blurry', "can't see", 'blurred vision'],
+            
+            # Single-word primary symptoms
+            'headache': ['headache', 'head pain', 'migraine', 'my head hurts', 'head hurts'],
+            'nausea': ['nausea', 'sick to stomach', 'queasy', 'nauseated', 'sick to my stomach'],
+            'vomiting': ['vomiting', 'vomit', 'throwing up', 'threw up'],
+            'fever': ['fever', 'temperature', 'febrile', 'running a fever'],
+            'chills': ['chills', 'chilly', 'shivering'],
             'cough': ['cough', 'coughing'],
-            'dizziness': ['dizzy', 'dizziness', 'lightheaded'],
-            'fatigue': ['fatigue', 'tired', 'exhausted', 'weak', 'weakness'],
-            'rash': ['rash', 'skin rash'],
-            'congestion': ['congestion', 'congested', 'stuffy nose'],
-            'pain': ['pain', 'painful', 'hurts', 'hurting', 'sore'],
+            'dizziness': ['dizzy', 'dizziness', 'lightheaded', 'light headed', 'room spinning'],
+            'fatigue': ['fatigue', 'tired', 'exhausted', 'no energy', 'feeling weak'],
+            'rash': ['rash', 'skin rash', 'itchy rash', 'hives'],
+            'congestion': ['congestion', 'congested', 'stuffy nose', 'blocked nose'],
+            'diarrhea': ['diarrhea', 'loose stools', 'watery stools'],
+            'numbness': ['numbness', 'numb', 'tingling', 'pins and needles'],
+            'fainting': ['fainting', 'passed out', 'fainted', 'blacked out', 'fainting spells'],
+            'itching': ['itching', 'itchy', 'scratching'],
+            'swelling': ['swelling', 'swollen', 'puffy'],
+            'bleeding': ['bleeding', 'blood', 'coughing blood'],
+            'pain': ['pain', 'painful', 'hurts', 'hurting', 'sore', 'ache'],
         }
         
         # CRITICAL: Extract symptoms from TRANSCRIPT ONLY using word boundaries
@@ -195,15 +215,30 @@ class MedGemmaService:
             (r'last\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
         ]
         
-        # Relative time patterns (yesterday, this morning, etc.)
+        # Relative time patterns (yesterday, this morning, meals, etc.)
         relative_patterns = [
+            # Yesterday variants
             (r'since\s+(yesterday\s*(?:morning|afternoon|evening|night)?)', 'since yesterday'),
-            (r'since\s+(this\s+morning)', 'since this morning'),
-            (r'since\s+(last\s+night)', 'since last night'),
-            (r'since\s+(today)', 'since today'),
             (r'started\s+(yesterday)', 'since yesterday'),
+            # Today/morning variants
+            (r'since\s+(this\s+morning)', 'since this morning'),
             (r'started\s+(this\s+morning)', 'since this morning'),
+            (r'(this\s+morning)', 'this morning'),  # standalone
+            # Night variants
+            (r'since\s+(last\s+night)', 'since last night'),
             (r'started\s+(last\s+night)', 'since last night'),
+            # Meal-based timing
+            (r'since\s+(breakfast|lunch|dinner|noon)', 'since meal'),
+            # Duration without numbers
+            (r'for\s+(months|years|weeks)', 'chronic'),
+            (r'(all\s+day|all\s+night)', 'all day'),
+        ]
+        
+        # Contextual patterns (when walking, when standing, etc.)
+        context_patterns = [
+            r'when\s+(walking|standing|sitting|lying\s+down|exercising|climbing\s+stairs)',
+            r'(at\s+rest)',
+            r'(radiating\s+to\s+\w+)',
         ]
         
         # Try numeric patterns first
@@ -236,6 +271,28 @@ class MedGemmaService:
             # Use onset for display (handles both "3 days ago" and "since yesterday")
             soap_parts.append(f"with onset {onset}")
         
+        # Extract context (when walking, radiating to, etc.)
+        context = "not specified"
+        for pattern in context_patterns:
+            match = re.search(pattern, transcript_clean)
+            if match:
+                context = match.group(1) if match.lastindex else match.group(0)
+                soap_parts.append(context)
+                break
+        
+        # Extract location if mentioned
+        location = "not specified"
+        location_patterns = [
+            r'in\s+(?:my\s+)?(knee|knees|leg|legs|arm|arms|back|chest|head|stomach|neck|shoulder|hip)',
+            r'on\s+(?:my\s+)?(arms?|legs?|face|back|chest|hands?|feet)',
+            r'(left|right)\s+(arm|leg|side|eye|ear)',
+        ]
+        for pattern in location_patterns:
+            match = re.search(pattern, transcript_clean)
+            if match:
+                location = match.group(0).replace('my ', '')
+                break
+        
         soap_note = ", ".join(soap_parts) + "."
         soap_note = soap_note[0].upper() + soap_note[1:]  # Capitalize first letter
         
@@ -245,11 +302,11 @@ class MedGemmaService:
                 "symptoms_mentioned": confirmed_symptoms if confirmed_symptoms else ["not specified"],
                 "onset": onset,
                 "duration": duration,
-                "location": "not specified",
+                "location": location,
                 "quality": "not specified",
                 "severity_description": "not specified",
                 "associated_symptoms": [],  # Only add truly associated symptoms, not main complaint
-                "aggravating_factors": "not specified",
+                "aggravating_factors": context if context != "not specified" else "not specified",
                 "alleviating_factors": "not specified"
             },
             "soap_note_subjective": soap_note,
