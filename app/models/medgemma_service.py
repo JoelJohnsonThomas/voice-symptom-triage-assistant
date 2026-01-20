@@ -123,10 +123,10 @@ class MedGemmaService:
     
     def _extract_fields_from_text(self, text: str, transcript: str) -> Dict[str, Any]:
         """
-        Fallback: Extract fields from unstructured text when JSON parsing fails.
+        Fallback: Extract fields from conversational text when JSON parsing fails.
         
         Args:
-            text: Raw model response
+            text: Raw model response (conversational)
             transcript: Original patient transcript
             
         Returns:
@@ -134,48 +134,82 @@ class MedGemmaService:
         """
         import re
         
-        # Try to extract chief complaint
-        chief_complaint = "unknown"
-        cc_match = re.search(r'"?chief_complaint"?\s*[:=]\s*"([^"]+)"', text, re.IGNORECASE)
-        if cc_match:
-            chief_complaint = cc_match.group(1)
-        else:
-            # Extract first sentence from transcript as fallback
-            sentences = transcript.split('.')
-            if sentences:
-                chief_complaint = sentences[0].strip()
+        # Clean up the text
+        text = text.strip()
         
-        # Try to extract SOAP note
-        soap_note = ""
-        soap_match = re.search(r'"?soap_note_subjective"?\s*[:=]\s*"([^"]+)"', text, re.IGNORECASE)
-        if soap_match:
-            soap_note = soap_match.group(1)
-        else:
-            # Generate basic SOAP note from transcript
-            soap_note = f"Patient reports: {transcript}"
+        # Common symptom keywords to look for
+        symptom_keywords = [
+            "headache", "migraine", "pain", "ache",
+            "nausea", "vomiting", "sick",
+            "fever", "temperature", "hot", "chills",
+            "dizziness", "dizzy", "lightheaded",
+            "cough", "congestion", "cold",
+            "fatigue", "tired", "weak",
+            "rash", "itching", "swelling"
+        ]
         
-        # Try to extract symptoms
-        symptoms = []
-        symptoms_match = re.search(r'"?symptoms_mentioned"?\s*[:=]\s*\[(.*?)\]', text, re.DOTALL)
-        if symptoms_match:
-            symptoms_text = symptoms_match.group(1)
-            symptoms = [s.strip().strip('"\'') for s in symptoms_text.split(',')]
+        # Extract chief complaint from transcript or model output
+        chief_complaint = "not specified"
+        symptoms_found = []
+        
+        # Check both transcript and model response for symptoms
+        combined_text = (transcript + " " + text).lower()
+        for keyword in symptom_keywords:
+            if keyword in combined_text:
+                symptoms_found.append(keyword)
+        
+        if symptoms_found:
+            chief_complaint = ", ".join(symptoms_found[:3])  # Top 3 symptoms
+        else:
+            # Use first meaningful phrase from transcript
+            words = transcript.strip().split()
+            if len(words) > 0:
+                chief_complaint = " ".join(words[:5])  # First 5 words
+        
+        # Extract timing information
+        onset = "not specified"
+        duration = "not specified"
+        
+        # Look for time-related patterns
+        time_patterns = [
+            (r'(\d+)\s*(?:hours?|hrs?)', 'hours'),
+            (r'(\d+)\s*(?:days?)', 'days'),
+            (r'(\d+)\s*(?:weeks?)', 'weeks'),
+            (r'past\s+(\d+\s+\w+)', 'duration')
+        ]
+        
+        for pattern, time_type in time_patterns:
+            match = re.search(pattern, combined_text, re.IGNORECASE)
+            if match:
+                if time_type == 'duration':
+                    duration = match.group(1)
+                    onset = match.group(1) + " ago"
+                else:
+                    duration = match.group(1) + " " + time_type
+                    onset = duration + " ago"
+                break
+        
+        # Create SOAP note
+        soap_note = f"Patient reports {chief_complaint}"
+        if duration != "not specified":
+            soap_note += f" for {duration}"
+        soap_note += f". {text[:200]}" if text else "."
         
         return {
             "chief_complaint": chief_complaint,
             "symptom_details": {
-                "symptoms_mentioned": symptoms if symptoms else ["not specified"],
-                "onset": "not specified",
-                "duration": "not specified",
+                "symptoms_mentioned": symptoms_found if symptoms_found else ["not specified"],
+                "onset": onset,
+                "duration": duration,
                 "location": "not specified",
                 "quality": "not specified",
                 "severity_description": "not specified",
-                "associated_symptoms": symptoms if symptoms else ["not specified"],
+                "associated_symptoms": symptoms_found if symptoms_found else ["not specified"],
                 "aggravating_factors": "not specified",
                 "alleviating_factors": "not specified"
             },
-            "soap_note_subjective": soap_note,
-            "parsing_method": "text_extraction_fallback"
+            "soap_note_subjective": soap_note.strip(),
+            "parsing_method": "text_extraction"
         }
     
     def generate_documentation(self, transcript: str) -> Dict[str, Any]:
@@ -207,34 +241,25 @@ class MedGemmaService:
                 padding=True
             ).to(self.model.device)
             
-            # Generate with light sampling (better than greedy for creative generation)
-            # Temperature 0.3 = mostly deterministic but allows variation
-            # top_p 0.9 = nucleus sampling for quality
+            # Generate with greedy decoding (stable on GPU with float16)
+            # We use conversational output and extract data via text parsing
             with torch.inference_mode():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=settings.medgemma_max_tokens,
-                    do_sample=True,  # Enable sampling instead of greedy
-                    temperature=0.3,  # Low temperature for consistency
-                    top_p=0.9,  # Nucleus sampling
+                    max_new_tokens=256,  # Shorter for focused answers
+                    do_sample=False,  # Greedy is stable
                     repetition_penalty=settings.medgemma_repetition_penalty,
                     pad_token_id=self.tokenizer.eos_token_id
                 )
             
-            # Decode output
-            decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # Decode output (skip the input prompt)
+            generated_ids = outputs[0][inputs.input_ids.shape[1]:]
+            decoded = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
             
             logger.info(f"Raw model output (length={len(decoded)}): {decoded[:200]}...")
             
-            # Extract JSON from response
-            json_text = self._extract_json_from_response(decoded)
-            
-            logger.info(f"Extracted JSON text (length={len(json_text)}): {json_text[:200]}...")
-            
-            # Parse JSON response
-            try:
-                documentation = json.loads(json_text)
-                logger.info("Successfully parsed JSON response")
+            # Extract documentation from conversational text
+            documentation = self._extract_fields_from_text(decoded, transcript)
                 
                 # Ensure compliance fields are present
                 documentation["requires_clinician_review"] = True

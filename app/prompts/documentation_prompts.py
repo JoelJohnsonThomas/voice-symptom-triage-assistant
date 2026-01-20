@@ -6,34 +6,16 @@ These prompts are designed to extract and structure information ONLY.
 They explicitly prohibit clinical decision-making, triage, or urgency assessment.
 """
 
-SYMPTOM_DOCUMENTATION_PROMPT = """Extract symptom information from this patient statement and return ONLY valid JSON.
+SYMPTOM_DOCUMENTATION_PROMPT = """Based on this patient statement, please provide the symptom information:
 
-Patient: {transcript}
+Statement: "{transcript}"
 
-Return this exact JSON structure (replace with actual extracted info):
-{{
-  "chief_complaint": "main symptom",
-  "symptom_details": {{
-    "symptoms_mentioned": ["symptom1", "symptom2"],
-    "onset": "when started",
-    "duration": "how long",
-    "location": "where",
-    "quality": "description",
-    "severity_description": "patient's words",
-    "associated_symptoms": ["other symptoms"],
-    "aggravating_factors": "what worsens",
-    "alleviating_factors": "what helps"
-  }},
-  "soap_note_subjective": "Detailed SOAP note text"
-}}
+Please provide:
+1. What is the main symptom or complaint?
+2. When did it start and how long has it lasted?
+3. Any other relevant details the patient mentioned?
 
-Rules:
-- Use "not specified" for missing info
-- Extract ONLY what patient said
-- No medical advice
-- No triage/urgency assessment
-
-Output (start immediately with {{):"""
+Answer concisely."""
 
 
 def create_documentation_prompt(transcript: str) -> str:
