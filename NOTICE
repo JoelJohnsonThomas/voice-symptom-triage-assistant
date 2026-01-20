@@ -1,0 +1,20 @@
+HAI-DEF is provided under and subject to the Health AI Developer Foundations Terms
+of Use found at https://developers.google.com/health-ai-developer-foundations/terms
+
+This software uses Google MedGemma and MedASR models from the Health AI Developer
+Foundations (HAI-DEF) collection. Use of these models is governed by the HAI-DEF
+Terms of Use and Prohibited Use Policy.
+
+Key Terms:
+- This software is for RESEARCH AND DEVELOPMENT purposes only
+- NOT approved for clinical use without appropriate Health Regulatory Authorization
+- Requires clinician review for all outputs
+- Does not provide medical advice, diagnosis, or treatment recommendations
+
+Model Attributions:
+- MedGemma: google/medgemma-1.5-4b-it (Medical LLM for documentation)
+- MedASR: google/medasr (Medical speech recognition)
+
+For the full terms, visit:
+- Terms of Use: https://developers.google.com/health-ai-developer-foundations/terms
+- Prohibited Use Policy: https://developers.google.com/health-ai-developer-foundations/prohibited-use-policy

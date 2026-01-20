@@ -216,21 +216,31 @@ python -m app.main
 
 ## Compliance & Legal
 
+> **⚠️ NOTICE:** HAI-DEF is provided under and subject to the Health AI Developer Foundations Terms of Use found at https://developers.google.com/health-ai-developer-foundations/terms
+
 ### Google HAI-DEF Terms
 
-This application complies with Google's Health AI Developer Foundations Terms. It is designed for **administrative use only** and explicitly:
+This application uses Google's MedGemma and MedASR models from the Health AI Developer Foundations (HAI-DEF) collection. Use of these models is governed by:
+
+- **Terms of Use:** https://developers.google.com/health-ai-developer-foundations/terms
+- **Prohibited Use Policy:** https://developers.google.com/health-ai-developer-foundations/prohibited-use-policy
+
+This application is designed for **RESEARCH AND DEVELOPMENT purposes only** and explicitly:
 
 ❌ **Does NOT:**
 - Perform clinical triage or urgency assessment
 - Provide diagnosis or treatment recommendations
 - Make clinical decisions or route patients
 - Provide medical advice to patients
+- Replace qualified healthcare professionals
 
 ✅ **Does:**
 - Transcribe patient voice messages
 - Structure symptom narratives
 - Extract and organize patient-reported information
 - Generate draft documentation for clinician review
+
+> **Clinical Use Notice:** Clinical Use (as defined in HAI-DEF Terms Section 1.1) requires appropriate Health Regulatory Authorization. This software is NOT approved for clinical use without such authorization.
 
 ### HIPAA Considerations
 
