@@ -21,17 +21,17 @@
     --error-color: #e74c3c;
     --success-color: #27ae60;
     --warning-color: #f39c12;
-    
+
     /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
-    
+
     /* Border radius */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
-    
+
     /* Transitions */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -251,6 +251,47 @@ body {
     font-style: italic;
 }
 
+/* Text Input Section */
+.text-input-section {
+    text-align: center;
+    padding: 20px;
+}
+
+.text-label {
+    display: block;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.text-icon {
+    font-size: 1.3rem;
+    margin-right: 8px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--accent-color);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: var(--transition);
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.1);
+}
+
+.text-input::placeholder {
+    color: var(--text-light);
+    font-style: italic;
+}
+
 /* Results Section */
 .results-section {
     background: var(--card-bg);
@@ -282,8 +323,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Result Cards */
@@ -302,6 +348,7 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -409,9 +456,19 @@ body {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateX(10px);
+    }
 }
 
 .error-card h3 {
@@ -440,16 +497,16 @@ body {
     .header h1 {
         font-size: 2rem;
     }
-    
+
     .audio-controls {
         flex-direction: column;
     }
-    
+
     .btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .export-buttons {
         flex-direction: column;
     }
@@ -467,7 +524,7 @@ body {
     body {
         background: white;
     }
-    
+
     .recording-section,
     .export-buttons,
     .audio-controls {

@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Symptom Intake & Documentation Assistant</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
         <header class="header">
             <h1>🎙️ Voice Symptom Intake Assistant</h1>
             <p class="subtitle">Administrative Documentation Support for Direct Care AI</p>
-            
+
             <!-- Compliance Notice -->
             <div class="compliance-notice">
                 <strong>⚠️ COMPLIANCE NOTICE:</strong> This system provides administrative documentation support only.
@@ -26,7 +28,7 @@
             <!-- Recording Section -->
             <section class="recording-section">
                 <h2>Record or Upload Symptom Report</h2>
-                
+
                 <!-- Audio Recording Controls -->
                 <div class="audio-controls">
                     <button id="recordBtn" class="btn btn-record">
@@ -63,6 +65,22 @@
                     <p class="file-name" id="fileName">No file selected</p>
                 </div>
 
+                <!-- OR Divider -->
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- Text Input -->
+                <div class="text-input-section">
+                    <label for="textInput" class="text-label">
+                        <span class="text-icon">⌨️</span>
+                        Type Symptoms Directly
+                    </label>
+                    <textarea id="textInput" class="text-input"
+                        placeholder="Type patient symptoms here... (e.g., 'I have had a sore throat for 48 hours')"
+                        rows="4"></textarea>
+                </div>
+
                 <!-- Submit Button -->
                 <button id="submitBtn" class="btn btn-primary" disabled>
                     Generate Documentation
@@ -89,7 +107,7 @@
                 <!-- Documentation -->
                 <div class="result-card" id="documentationCard" style="display: none;">
                     <h3>📋 Structured Documentation</h3>
-                    
+
                     <!-- Clinician Review Notice -->
                     <div class="review-notice">
                         <strong>🔍 Requires Clinician Review</strong>
@@ -144,4 +162,5 @@
 
     <script src="/static/js/app.js"></script>
 </body>
+
 </html>

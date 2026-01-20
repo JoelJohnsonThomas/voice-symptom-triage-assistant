@@ -11,7 +11,8 @@ const state = {
     audioBlob: null,
     audioUrl: null,
     isRecording: false,
-    uploadedFile: null
+    uploadedFile: null,
+    textInput: ''  // Text input state
 };
 
 // DOM elements
@@ -22,6 +23,7 @@ const elements = {
     submitBtn: document.getElementById('submitBtn'),
     audioFile: document.getElementById('audioFile'),
     fileName: document.getElementById('fileName'),
+    textInput: document.getElementById('textInput'),  // Text input element
     resultsSection: document.getElementById('resultsSection'),
     loadingIndicator: document.getElementById('loadingIndicator'),
     transcriptionCard: document.getElementById('transcriptionCard'),
@@ -55,6 +57,9 @@ function initializeEventListeners() {
     elements.audioFile.addEventListener('change', handleFileUpload);
     elements.exportJsonBtn.addEventListener('click', exportAsJson);
     elements.copyBtn.addEventListener('click', copyToClipboard);
+
+    // Text input listener
+    elements.textInput.addEventListener('input', handleTextInput);
 }
 
 /**
@@ -156,6 +161,8 @@ function handleFileUpload(event) {
     if (file) {
         state.uploadedFile = file;
         state.audioBlob = null; // Clear recorded audio
+        state.textInput = '';   // Clear text input
+        elements.textInput.value = '';
 
         elements.fileName.textContent = file.name;
         elements.submitBtn.disabled = false;
@@ -164,14 +171,34 @@ function handleFileUpload(event) {
 }
 
 /**
- * Submit audio for documentation
+ * Handle text input
+ */
+function handleTextInput(event) {
+    const text = event.target.value.trim();
+    state.textInput = text;
+
+    // Enable submit if there's text, disable audio-related inputs
+    if (text.length > 0) {
+        elements.submitBtn.disabled = false;
+        // Clear audio state when typing
+        state.uploadedFile = null;
+        state.audioBlob = null;
+        elements.fileName.textContent = 'No file selected';
+    } else if (!state.audioBlob && !state.uploadedFile) {
+        elements.submitBtn.disabled = true;
+    }
+}
+
+/**
+ * Submit audio or text for documentation
  */
 async function submitForDocumentation() {
-    // Determine audio source
+    // Determine input source: text first, then audio
+    const textToSubmit = state.textInput;
     const audioToSubmit = state.uploadedFile || state.audioBlob;
 
-    if (!audioToSubmit) {
-        showError('Please record or upload audio first.');
+    if (!textToSubmit && !audioToSubmit) {
+        showError('Please record audio, upload a file, or type symptoms.');
         return;
     }
 
@@ -183,22 +210,50 @@ async function submitForDocumentation() {
     elements.errorCard.style.display = 'none';
 
     try {
-        // Create form data
-        const formData = new FormData();
-        formData.append('audio', audioToSubmit, 'recording.wav');
+        let data;
 
-        // Call voice-intake endpoint
-        const response = await fetch('/api/voice-intake', {
-            method: 'POST',
-            body: formData
-        });
+        if (textToSubmit) {
+            // Text input mode - call document endpoint directly
+            const response = await fetch('/api/document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ transcript: textToSubmit })
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Request failed');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Request failed');
+            }
+
+            const docData = await response.json();
+
+            // Format as voice-intake style response
+            data = {
+                transcript: textToSubmit,
+                documentation: docData.documentation,
+                duration_seconds: 0,  // No audio duration for text
+                requires_clinician_review: docData.requires_clinician_review,
+                compliance_notice: docData.compliance_notice
+            };
+        } else {
+            // Audio mode - call voice-intake endpoint
+            const formData = new FormData();
+            formData.append('audio', audioToSubmit, 'recording.wav');
+
+            const response = await fetch('/api/voice-intake', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Request failed');
+            }
+
+            data = await response.json();
         }
-
-        const data = await response.json();
 
         // Hide loading
         elements.loadingIndicator.style.display = 'none';
@@ -209,7 +264,7 @@ async function submitForDocumentation() {
     } catch (error) {
         console.error('Error:', error);
         elements.loadingIndicator.style.display = 'none';
-        showError(error.message || 'Failed to process audio. Please try again.');
+        showError(error.message || 'Failed to process input. Please try again.');
     }
 }
 
