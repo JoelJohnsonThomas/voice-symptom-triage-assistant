@@ -20,14 +20,15 @@ def create_documentation_prompt(transcript: str) -> str:
     # Clean the transcript first - remove ASR special tokens
     clean_transcript = transcript.replace("</s>", "").replace("<s>", "").strip().lstrip('.')
     
-    # Simple, direct instruction with no chat template tokens
+    # Direct instruction asking for structured extraction + narrative SOAP
     return f"""Analyze this patient statement for medical documentation.
 
 Patient Statement: "{clean_transcript}"
 
-Extract ONLY information explicitly mentioned:
-- Main symptoms (list only symptoms the patient stated)
-- Duration or onset (if mentioned)
-- Associated details (if mentioned)
+Extract ONLY information the patient explicitly stated:
+1. Main symptoms (comma-separated list)
+2. Duration/timing (when it started or how long)
+3. Brief SOAP Subjective note (1-2 sentences summarizing the history of present illness)
 
-Do not add symptoms not stated. Use plain English, no markdown formatting."""
+Do not add symptoms not stated. Use plain English, no markdown."""
+

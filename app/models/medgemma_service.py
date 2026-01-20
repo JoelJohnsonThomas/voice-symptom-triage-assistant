@@ -169,40 +169,52 @@ class MedGemmaService:
         # Build chief complaint from confirmed symptoms only
         chief_complaint = ", ".join(confirmed_symptoms[:3]) if confirmed_symptoms else "not clearly specified"
         
+        # Word-to-number mapping for duration parsing
+        word_to_num = {
+            'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
+            'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+            'a': '1', 'an': '1', 'couple': '2', 'few': '3', 'several': '3'
+        }
+        
+        # Convert spelled-out numbers in transcript for duration matching
+        transcript_for_time = transcript_clean
+        for word, num in word_to_num.items():
+            transcript_for_time = re.sub(rf'\b{word}\b', num, transcript_for_time)
+        
         # Extract timing information from TRANSCRIPT (not AI output)
         duration = "not specified"
         onset = "not specified"
         
+        # Enhanced time patterns (now work with converted numbers)
         time_patterns = [
-            (r'for\s+(?:the\s+)?past\s+(\d+\s+(?:day|days|hour|hours|week|weeks))', 'duration'),
-            (r'(\d+)\s+(day|days|hour|hours|week|weeks)\s+ago', 'onset'),
-            (r'since\s+(\d+\s+(?:day|days|hour|hours|week|weeks))\s+ago', 'onset'),
+            (r'for\s+(?:the\s+)?past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'(\d+)\s*(day|days|hour|hours|week|weeks|month|months)\s+ago', 'onset'),
+            (r'since\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'last\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
         ]
         
         for pattern, match_type in time_patterns:
-            match = re.search(pattern, transcript_clean)
+            match = re.search(pattern, transcript_for_time)
             if match:
-                if match_type == 'duration':
-                    duration = match.group(1)
-                    onset = f"{duration} ago"
-                else:
-                    onset = match.group(0)
-                    duration = match.group(1)
+                num_val = match.group(1)
+                unit = match.group(2)
+                duration = f"{num_val} {unit}"
+                onset = f"{duration} ago"
                 break
         
-        # Build SOAP note from VALIDATED information only
+        # Build SOAP note from VALIDATED information only - more narrative style
         soap_parts = []
         if confirmed_symptoms:
             soap_parts.append(f"Patient reports {chief_complaint}")
         else:
-            soap_parts.append(f"Patient describes symptoms")
+            soap_parts.append("Patient describes symptoms")
         
         if duration != "not specified":
-            soap_parts.append(f"present for {duration}")
+            soap_parts.append(f"with onset {duration} ago")
         
-        soap_note = ". ".join(soap_parts).strip()
-        if not soap_note.endswith('.'):
-            soap_note += "."
+        soap_note = ", ".join(soap_parts) + "."
+        soap_note = soap_note[0].upper() + soap_note[1:]  # Capitalize first letter
         
         return {
             "chief_complaint": chief_complaint,
@@ -213,7 +225,7 @@ class MedGemmaService:
                 "location": "not specified",
                 "quality": "not specified",
                 "severity_description": "not specified",
-                "associated_symptoms": confirmed_symptoms if confirmed_symptoms else ["not specified"],
+                "associated_symptoms": [],  # Only add truly associated symptoms, not main complaint
                 "aggravating_factors": "not specified",
                 "alleviating_factors": "not specified"
             },
