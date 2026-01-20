@@ -243,8 +243,8 @@ class MedGemmaService:
             (r'since\s+(last\s+night)', 'since last night'),
             (r'started\s+(last\s+night)', 'since last night'),
             (r'since\s+(night)', 'since last night'),  # assume last night
-            # Meal-based timing
-            (r'since\s+(breakfast|lunch|dinner|noon)', 'since meal'),
+            # Meal-based timing - preserve actual word
+            (r'since\s+(breakfast|lunch|dinner|noon)', 'since CAPTURED'),
             # Duration without numbers (preserve literal)
             (r'for\s+(months|years|weeks)', 'chronic'),
             (r'for\s+((?:several|few|couple)\s+(?:days|weeks|hours|months))', 'duration'),
@@ -278,8 +278,13 @@ class MedGemmaService:
             for pattern, onset_value in relative_patterns:
                 match = re.search(pattern, transcript_clean)
                 if match:
-                    onset = onset_value
-                    duration = match.group(1)  # Use the captured relative time
+                    captured_value = match.group(1)
+                    # Handle CAPTURED placeholder for meal-based timing
+                    if onset_value == 'since CAPTURED':
+                        onset = f"since {captured_value}"
+                    else:
+                        onset = onset_value
+                    duration = captured_value
                     break
         
         # Build SOAP note from VALIDATED information only - more narrative style
