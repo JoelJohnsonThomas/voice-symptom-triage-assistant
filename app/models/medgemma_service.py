@@ -217,14 +217,14 @@ class MedGemmaService:
         
         # Enhanced time patterns (now work with converted numbers)
         time_patterns = [
-            (r'for\s+(?:the\s+)?past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
-            (r'for\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),  # Simple "for a week"
-            (r'(\d+)\s*(day|days|hour|hours|week|weeks|month|months)\s+ago', 'onset'),
-            (r'since\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
-            (r'past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
-            (r'last\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
-            # Standalone duration without "for" (e.g., "fatigue four months" when ASR mishears "for" as "four")
-            (r'(\d+)\s*(month|months|year|years|week|weeks)', 'duration'),
+            (r'for\s+(?:the\s+)?past\s+(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'for\s+(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)', 'duration'),  # Simple "for 20 minutes"
+            (r'(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)\s+ago', 'onset'),
+            (r'since\s+(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'past\s+(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            (r'last\s+(\d+)\s*(minute|minutes|day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            # Standalone duration without "for"
+            (r'(\d+)\s*(minute|minutes|month|months|year|years|week|weeks)', 'duration'),
         ]
         
         # Relative time patterns (yesterday, this morning, meals, etc.)
