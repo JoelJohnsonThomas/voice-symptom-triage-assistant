@@ -234,11 +234,15 @@ class MedGemmaService:
             (r'started\s+(yesterday)', 'since yesterday'),
             # Today/morning variants
             (r'since\s+(this\s+morning)', 'since this morning'),
+            (r'since\s+(morning)', 'since morning'),  # without "this"
             (r'started\s+(this\s+morning)', 'since this morning'),
             (r'(this\s+morning)', 'this morning'),  # standalone
+            # Time of day variants (without "this")
+            (r'since\s+(evening|afternoon|tonight|today)', 'since today'),
             # Night variants
             (r'since\s+(last\s+night)', 'since last night'),
             (r'started\s+(last\s+night)', 'since last night'),
+            (r'since\s+(night)', 'since last night'),  # assume last night
             # Meal-based timing
             (r'since\s+(breakfast|lunch|dinner|noon)', 'since meal'),
             # Duration without numbers (preserve literal)
