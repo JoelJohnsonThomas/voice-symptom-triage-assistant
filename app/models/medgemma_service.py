@@ -304,7 +304,11 @@ class MedGemmaService:
             match = re.search(pattern, transcript_clean)
             if match:
                 context = match.group(1) if match.lastindex else match.group(0)
-                soap_parts.append(context)
+                # Add proper phrasing for context in SOAP note
+                if context.startswith("at ") or context.startswith("radiating"):
+                    soap_parts.append(context)
+                else:
+                    soap_parts.append(f"when {context}")
                 break
         
         # Extract location if mentioned
