@@ -194,6 +194,18 @@ class MedGemmaService:
             (r'last\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
         ]
         
+        # Relative time patterns (yesterday, this morning, etc.)
+        relative_patterns = [
+            (r'since\s+(yesterday\s*(?:morning|afternoon|evening|night)?)', 'since yesterday'),
+            (r'since\s+(this\s+morning)', 'since this morning'),
+            (r'since\s+(last\s+night)', 'since last night'),
+            (r'since\s+(today)', 'since today'),
+            (r'started\s+(yesterday)', 'since yesterday'),
+            (r'started\s+(this\s+morning)', 'since this morning'),
+            (r'started\s+(last\s+night)', 'since last night'),
+        ]
+        
+        # Try numeric patterns first
         for pattern, match_type in time_patterns:
             match = re.search(pattern, transcript_for_time)
             if match:
@@ -203,6 +215,15 @@ class MedGemmaService:
                 onset = f"{duration} ago"
                 break
         
+        # If no numeric match, try relative patterns
+        if duration == "not specified":
+            for pattern, onset_value in relative_patterns:
+                match = re.search(pattern, transcript_clean)
+                if match:
+                    onset = onset_value
+                    duration = match.group(1)  # Use the captured relative time
+                    break
+        
         # Build SOAP note from VALIDATED information only - more narrative style
         soap_parts = []
         if confirmed_symptoms:
@@ -211,7 +232,8 @@ class MedGemmaService:
             soap_parts.append("Patient describes symptoms")
         
         if duration != "not specified":
-            soap_parts.append(f"with onset {duration} ago")
+            # Use onset for display (handles both "3 days ago" and "since yesterday")
+            soap_parts.append(f"with onset {onset}")
         
         soap_note = ", ".join(soap_parts) + "."
         soap_note = soap_note[0].upper() + soap_note[1:]  # Capitalize first letter
