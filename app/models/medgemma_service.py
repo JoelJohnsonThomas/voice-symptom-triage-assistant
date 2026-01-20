@@ -284,8 +284,13 @@ class MedGemmaService:
             soap_parts.append("Patient describes symptoms")
         
         if duration != "not specified":
-            # Use onset for display (handles both "3 days ago" and "since yesterday")
-            soap_parts.append(f"with onset {onset}")
+            # Handle different onset types for natural phrasing
+            if onset == "chronic":
+                soap_parts.append(f"present for {duration}")
+            elif onset.startswith("since"):
+                soap_parts.append(f"{onset}")
+            else:
+                soap_parts.append(f"with onset {onset}")
         
         # Extract context (when walking, radiating to, etc.)
         context = "not specified"
