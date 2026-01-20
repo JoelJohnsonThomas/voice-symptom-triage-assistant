@@ -33,11 +33,11 @@ class MedGemmaService:
         try:
             logger.info(f"Loading MedGemma model on device: {self.device}")
             
-            # Determine optimal dtype based on device
+            # Use bfloat16 on GPU for better numerical stability (recommended for MedGemma)
+            # float16 can cause empty output issues with this model
             if settings.enable_gpu and torch.cuda.is_available():
-                # Use float16 on GPU to reduce VRAM usage (4.96GB -> ~2.5GB)
-                dtype = torch.float16
-                logger.info("Using float16 precision on GPU for memory efficiency")
+                dtype = torch.bfloat16
+                logger.info("Using bfloat16 precision on GPU for numerical stability")
             else:
                 # Use float32 on CPU
                 dtype = torch.float32
