@@ -223,6 +223,8 @@ class MedGemmaService:
             (r'since\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
             (r'past\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
             (r'last\s+(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', 'duration'),
+            # Standalone duration without "for" (e.g., "fatigue four months" when ASR mishears "for" as "four")
+            (r'(\d+)\s*(month|months|year|years|week|weeks)', 'duration'),
         ]
         
         # Relative time patterns (yesterday, this morning, meals, etc.)
