@@ -20,7 +20,6 @@ class Settings(BaseSettings):
     enable_gpu: bool = False
     
     # MedGemma Generation Parameters
-    medgemma_temperature: float = 0.1  # Low temperature for deterministic JSON output
     medgemma_max_tokens: int = 1024  # Sufficient for complete documentation
     medgemma_repetition_penalty: float = 1.1  # Prevent repetitive output
     
