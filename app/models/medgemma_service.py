@@ -86,23 +86,38 @@ class MedGemmaService:
         import re
         
         # Remove prompt echo if present (common with instruction models)
-        # Look for the actual JSON output after the prompt
-        if "Patient Statement:" in text:
-            # Split after the prompt and take the response part
+        # The model often echoes the entire prompt before generating
+        if "RESPOND ONLY WITH THE JSON OBJECT" in text:
+            # Split after this marker and take everything after
             parts = text.split("RESPOND ONLY WITH THE JSON OBJECT")
             if len(parts) > 1:
+                # Take the response part (after the prompt)
                 text = parts[-1]
+                logger.info(f"Removed prompt echo, remaining text length: {len(text)}")
         
         # Try to extract JSON from markdown code fence
         json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
         if json_match:
+            logger.info("Found JSON in markdown code fence")
             return json_match.group(1).strip()
         
-        # Try to find JSON object directly (between curly braces)
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        # Try to find JSON object using non-greedy matching
+        # Look for { followed by anything (non-greedy) followed by }
+        # This should match the first complete JSON object
+        json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
         if json_match:
+            logger.info("Found JSON using non-greedy pattern matching")
             return json_match.group(0).strip()
         
+        # Last resort: try greedy matching from first { to last }
+        first_brace = text.find('{')
+        last_brace = text.rfind('}')
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            json_str = text[first_brace:last_brace + 1]
+            logger.info(f"Found JSON using brace positions: {first_brace} to {last_brace}")
+            return json_str.strip()
+        
+        logger.warning("No JSON pattern found in response")
         # Return as-is if no pattern found
         return text.strip()
     
