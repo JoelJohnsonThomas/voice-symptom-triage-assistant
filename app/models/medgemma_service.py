@@ -123,10 +123,10 @@ class MedGemmaService:
     
     def _extract_fields_from_text(self, text: str, transcript: str) -> Dict[str, Any]:
         """
-        Fallback: Extract fields from conversational text when JSON parsing fails.
+        Extract fields from conversational text with markdown cleanup.
         
         Args:
-            text: Raw model response (conversational)
+            text: Raw model response (may contain markdown)
             transcript: Original patient transcript
             
         Returns:
@@ -134,10 +134,14 @@ class MedGemmaService:
         """
         import re
         
-        # Clean up the text
-        text = text.strip()
+        # Clean markdown formatting from model output
+        cleaned_text = text
+        cleaned_text = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_text)  # Remove **bold**
+        cleaned_text = re.sub(r'_(.*?)_', r'\1', cleaned_text)        # Remove _italic_
+        cleaned_text = re.sub(r'`(.*?)`', r'\1', cleaned_text)        # Remove `code`
+        cleaned_text = re.sub(r'^\d+\.\s*', '', cleaned_text, flags=re.MULTILINE)  # Remove numbered lists
         
-        # Common symptom keywords to look for
+        # Common symptom keywords
         symptom_keywords = [
             "headache", "migraine", "pain", "ache",
             "nausea", "vomiting", "sick",
@@ -148,12 +152,12 @@ class MedGemmaService:
             "rash", "itching", "swelling"
         ]
         
-        # Extract chief complaint from transcript or model output
+        # Extract chief complaint
         chief_complaint = "not specified"
         symptoms_found = []
         
-        # Check both transcript and model response for symptoms
-        combined_text = (transcript + " " + text).lower()
+        # Check both transcript and model response
+        combined_text = (transcript + " " + cleaned_text).lower()
         for keyword in symptom_keywords:
             if keyword in combined_text:
                 symptoms_found.append(keyword)
@@ -161,39 +165,61 @@ class MedGemmaService:
         if symptoms_found:
             chief_complaint = ", ".join(symptoms_found[:3])  # Top 3 symptoms
         else:
-            # Use first meaningful phrase from transcript
-            words = transcript.strip().split()
-            if len(words) > 0:
-                chief_complaint = " ".join(words[:5])  # First 5 words
+            # Try extracting from "Main Symptom:" pattern
+            symptom_match = re.search(r'(?:main symptom|chief complaint)[:\s]*([^\.\n]+)', cleaned_text, re.IGNORECASE)
+            if symptom_match:
+                chief_complaint = symptom_match.group(1).strip()
+            else:
+                # Use first meaningful phrase from transcript
+                words = transcript.strip().split()
+                if len(words) > 0:
+                    chief_complaint = " ".join(words[:5])
         
         # Extract timing information
         onset = "not specified"
         duration = "not specified"
         
-        # Look for time-related patterns
+        # Enhanced time patterns
         time_patterns = [
-            (r'(\d+)\s*(?:hours?|hrs?)', 'hours'),
-            (r'(\d+)\s*(?:days?)', 'days'),
-            (r'(\d+)\s*(?:weeks?)', 'weeks'),
-            (r'past\s+(\d+\s+\w+)', 'duration')
+            (r'started\s+(\d+\s+(?:days?|hours?|weeks?))\s+ago', 'started'),
+            (r'for\s+(?:the\s+)?past\s+(\d+\s+(?:days?|hours?|weeks?))', 'duration'),
+            (r'(?:for|over|since)\s+(\d+\s+(?:days?|hours?|weeks?))', 'duration'),
+            (r'(\d+)\s+(days?|hours?|weeks?)', 'duration')
         ]
         
-        for pattern, time_type in time_patterns:
+        for pattern, match_type in time_patterns:
             match = re.search(pattern, combined_text, re.IGNORECASE)
             if match:
-                if time_type == 'duration':
-                    duration = match.group(1)
-                    onset = match.group(1) + " ago"
+                time_value = match.group(1)
+                if match_type == 'started':
+                    onset = time_value
+                    duration = time_value
                 else:
-                    duration = match.group(1) + " " + time_type
-                    onset = duration + " ago"
+                    duration = time_value
+                    onset = duration + " ago" if "ago" not in duration else duration
                 break
         
-        # Create SOAP note
-        soap_note = f"Patient reports {chief_complaint}"
+        # Build clean SOAP note from model output + extracted info
+        soap_parts = []
+        
+        if symptoms_found:
+            soap_parts.append(f"Patient reports {chief_complaint}")
+        
         if duration != "not specified":
-            soap_note += f" for {duration}"
-        soap_note += f". {text[:200]}" if text else "."
+            soap_parts.append(f"symptoms present for {duration}")
+        
+        # Add relevant excerpts from model output (first clean sentence)
+        sentences = [s.strip() for s in re.split(r'[\.!?]', cleaned_text) if s.strip()]
+        if sentences and len(soap_parts) < 2:
+            # Add first informative sentence from model
+            for sent in sentences[:2]:
+                if len(sent) > 10 and any(word in sent.lower() for word in ['symptom', 'patient', 'report']):
+                    soap_parts.append(sent)
+                    break
+        
+        soap_note = ". ".join(soap_parts).strip()
+        if not soap_note.endswith('.'):
+            soap_note += "."
         
         return {
             "chief_complaint": chief_complaint,
@@ -208,7 +234,7 @@ class MedGemmaService:
                 "aggravating_factors": "not specified",
                 "alleviating_factors": "not specified"
             },
-            "soap_note_subjective": soap_note.strip(),
+            "soap_note_subjective": soap_note,
             "parsing_method": "text_extraction"
         }
     
@@ -255,12 +281,12 @@ class MedGemmaService:
                 padding=True
             ).to(self.model.device)
             
-            # Generate with greedy decoding (stable on GPU with float16)
+            # Generate with greedy decoding (stable on GPU with bfloat16)
             # We use conversational output and extract data via text parsing
             with torch.inference_mode():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=256,  # Shorter for focused answers
+                    max_new_tokens=512,  # Increased to avoid truncation
                     do_sample=False,  # Greedy is stable
                     repetition_penalty=settings.medgemma_repetition_penalty,
                     pad_token_id=self.tokenizer.eos_token_id
