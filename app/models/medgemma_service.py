@@ -186,14 +186,24 @@ class MedGemmaService:
                     confirmed_symptoms.append(symptom)
                     break  # Found this symptom, move to next
         
+        # Remove generic 'pain' if a more specific pain type is present
+        specific_pain_types = ['back pain', 'chest pain', 'ear pain', 'joint pain', 'stomach ache', 
+                               'headache', 'sore throat']
+        if 'pain' in confirmed_symptoms:
+            for specific in specific_pain_types:
+                if specific in confirmed_symptoms:
+                    confirmed_symptoms.remove('pain')
+                    break
+        
         # Build chief complaint from confirmed symptoms only
         chief_complaint = ", ".join(confirmed_symptoms[:3]) if confirmed_symptoms else "not clearly specified"
         
         # Word-to-number mapping for duration parsing
+        # Only convert unambiguous number words, keep "few/several/couple" as-is
         word_to_num = {
             'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
             'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
-            'a': '1', 'an': '1', 'couple': '2', 'few': '3', 'several': '3'
+            'a': '1', 'an': '1'
         }
         
         # Convert spelled-out numbers in transcript for duration matching
@@ -229,8 +239,9 @@ class MedGemmaService:
             (r'started\s+(last\s+night)', 'since last night'),
             # Meal-based timing
             (r'since\s+(breakfast|lunch|dinner|noon)', 'since meal'),
-            # Duration without numbers
+            # Duration without numbers (preserve literal)
             (r'for\s+(months|years|weeks)', 'chronic'),
+            (r'for\s+((?:several|few|couple)\s+(?:days|weeks|hours|months))', 'duration'),
             (r'(all\s+day|all\s+night)', 'all day'),
         ]
         
@@ -247,6 +258,11 @@ class MedGemmaService:
             if match:
                 num_val = match.group(1)
                 unit = match.group(2)
+                # Ensure proper plural form
+                if int(num_val) != 1 and not unit.endswith('s'):
+                    unit += 's'
+                elif int(num_val) == 1 and unit.endswith('s'):
+                    unit = unit[:-1]  # Remove trailing 's' for singular
                 duration = f"{num_val} {unit}"
                 onset = f"{duration} ago"
                 break
