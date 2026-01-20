@@ -207,14 +207,16 @@ class MedGemmaService:
                 padding=True
             ).to(self.model.device)
             
-            # Generate with improved parameters
-            # Use greedy decoding (do_sample=False) for deterministic, stable output on GPU
-            # Sampling with low temperature can cause numerical issues with float16
+            # Generate with light sampling (better than greedy for creative generation)
+            # Temperature 0.3 = mostly deterministic but allows variation
+            # top_p 0.9 = nucleus sampling for quality
             with torch.inference_mode():
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=settings.medgemma_max_tokens,
-                    do_sample=False,  # Greedy decoding for stability on GPU
+                    do_sample=True,  # Enable sampling instead of greedy
+                    temperature=0.3,  # Low temperature for consistency
+                    top_p=0.9,  # Nucleus sampling
                     repetition_penalty=settings.medgemma_repetition_penalty,
                     pad_token_id=self.tokenizer.eos_token_id
                 )
