@@ -260,40 +260,21 @@ class MedGemmaService:
             
             # Extract documentation from conversational text
             documentation = self._extract_fields_from_text(decoded, transcript)
-                
-                # Ensure compliance fields are present
-                documentation["requires_clinician_review"] = True
-                documentation["compliance_notice"] = (
-                    "This is administrative documentation only. "
-                    "All clinical decisions must be made by qualified healthcare professionals."
-                )
-                documentation["parsing_method"] = "json_successful"
-                
-                # Remove any urgency/severity fields if present (compliance)
-                documentation.pop("urgency", None)
-                documentation.pop("severity", None)
-                documentation.pop("risk_level", None)
-                documentation.pop("recommended_actions", None)
-                
-                return documentation
-                
-            except json.JSONDecodeError as je:
-                logger.warning(f"Failed to parse JSON response: {je}, attempting text extraction")
-                
-                # Fallback: Extract fields from unstructured text
-                documentation = self._extract_fields_from_text(decoded, transcript)
-                
-                # Add compliance fields
-                documentation["requires_clinician_review"] = True
-                documentation["compliance_notice"] = (
-                    "This is administrative documentation only. "
-                    "All clinical decisions must be made by qualified healthcare professionals."
-                )
-                documentation["raw_text"] = decoded
-                
-                logger.info(f"Extracted documentation using fallback method: {list(documentation.keys())}")
-                
-                return documentation
+            
+            # Ensure compliance fields are present
+            documentation["requires_clinician_review"] = True
+            documentation["compliance_notice"] = (
+                "This is administrative documentation only. "
+                "All clinical decisions must be made by qualified healthcare professionals."
+            )
+            
+            # Remove any urgency/severity fields if present (compliance)
+            documentation.pop("urgency", None)
+            documentation.pop("severity", None)
+            documentation.pop("risk_level", None)
+            documentation.pop("recommended_actions", None)
+            
+            return documentation
             
         except Exception as e:
             logger.error(f"Documentation generation failed: {e}")
