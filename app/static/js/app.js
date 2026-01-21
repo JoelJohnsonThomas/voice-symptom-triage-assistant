@@ -11,7 +11,6 @@ const state = {
     audioBlob: null,
     audioUrl: null,
     isRecording: false,
-    uploadedFile: null,
     textInput: ''  // Text input state
 };
 
@@ -21,8 +20,6 @@ const elements = {
     stopBtn: document.getElementById('stopBtn'),
     playBtn: document.getElementById('playBtn'),
     submitBtn: document.getElementById('submitBtn'),
-    audioFile: document.getElementById('audioFile'),
-    fileName: document.getElementById('fileName'),
     textInput: document.getElementById('textInput'),  // Text input element
     resultsSection: document.getElementById('resultsSection'),
     loadingIndicator: document.getElementById('loadingIndicator'),
@@ -56,7 +53,6 @@ function initializeEventListeners() {
     elements.stopBtn.addEventListener('click', stopRecording);
     elements.playBtn.addEventListener('click', playRecording);
     elements.submitBtn.addEventListener('click', submitForDocumentation);
-    elements.audioFile.addEventListener('change', handleFileUpload);
     elements.exportJsonBtn.addEventListener('click', exportAsJson);
     elements.copyBtn.addEventListener('click', copyToClipboard);
 
@@ -156,37 +152,18 @@ function playRecording() {
 }
 
 /**
- * Handle file upload
- */
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-        state.uploadedFile = file;
-        state.audioBlob = null; // Clear recorded audio
-        state.textInput = '';   // Clear text input
-        elements.textInput.value = '';
-
-        elements.fileName.textContent = file.name;
-        elements.submitBtn.disabled = false;
-        elements.playBtn.disabled = true;
-    }
-}
-
-/**
  * Handle text input
  */
 function handleTextInput(event) {
     const text = event.target.value.trim();
     state.textInput = text;
 
-    // Enable submit if there's text, disable audio-related inputs
+    // Enable submit if there's text
     if (text.length > 0) {
         elements.submitBtn.disabled = false;
         // Clear audio state when typing
-        state.uploadedFile = null;
         state.audioBlob = null;
-        elements.fileName.textContent = 'No file selected';
-    } else if (!state.audioBlob && !state.uploadedFile) {
+    } else if (!state.audioBlob) {
         elements.submitBtn.disabled = true;
     }
 }
@@ -197,10 +174,10 @@ function handleTextInput(event) {
 async function submitForDocumentation() {
     // Determine input source: text first, then audio
     const textToSubmit = state.textInput;
-    const audioToSubmit = state.uploadedFile || state.audioBlob;
+    const audioToSubmit = state.audioBlob;
 
     if (!textToSubmit && !audioToSubmit) {
-        showError('Please record audio, upload a file, or type symptoms.');
+        showError('Please record audio or type symptoms.');
         return;
     }
 
@@ -279,10 +256,9 @@ function displayResults(data) {
     elements.audioDuration.textContent = data.duration_seconds.toFixed(1);
     elements.transcriptionCard.style.display = 'block';
 
-    // Audio Playback for Verification (only show if audio was used)
-    if (state.audioUrl || state.uploadedFile) {
-        const audioSource = state.audioUrl || URL.createObjectURL(state.uploadedFile);
-        elements.resultAudioPlayer.src = audioSource;
+    // Audio Playback for Verification (only show if recorded audio was used)
+    if (state.audioUrl) {
+        elements.resultAudioPlayer.src = state.audioUrl;
         elements.audioPlaybackSection.style.display = 'block';
     } else {
         // Hide audio section for text input
