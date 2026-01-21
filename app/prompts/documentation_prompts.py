@@ -27,17 +27,21 @@ Patient Statement: "{clean_transcript}"
 
 Extract ONLY information the patient explicitly stated:
 
-1. Main symptoms (comma-separated list)
+1. Main symptoms (comma-separated list, include ALL symptom options if patient is uncertain)
 2. Location (body part affected, include any radiation pattern like "back, radiating to leg")
-3. Quality/Character (how the symptom feels: sharp, dull, burning, throbbing, aching, etc.)
+3. Quality/Character (how the symptom feels: sharp, dull, burning, throbbing, aching, pressure, etc.)
 4. Duration/timing (when it started or how long, e.g. "2 days", "since Monday", "chronic")
 5. Severity (if patient describes intensity: mild, moderate, severe, or numeric scale)
 6. Associated symptoms (other symptoms mentioned alongside the main complaint)
-7. Brief SOAP Subjective note (1-2 sentences summarizing the history of present illness, include radiation patterns if mentioned)
+7. Brief SOAP Subjective note (1-2 sentences summarizing the history of present illness)
 
 Important extraction rules:
+- PRESERVE PATIENT UNCERTAINTY: If patient says "not sure if", "maybe", "or", "could be", include ALL options mentioned
+  Example: "Not sure if it is pain or pressure" → Symptoms: "pain or pressure (patient uncertain)"
+  Example: "kind of a headache maybe" → Symptoms: "possible headache"
 - For radiation patterns (e.g. "radiating to", "spreading to", "goes down to"), include in Location field
 - If patient says "back pain radiating to leg", Location should be "back, radiating to leg"
+- Include uncertainty language in SOAP note: "Patient reports possible...", "Patient uncertain between..."
 - Do not add symptoms or details not stated by patient
 - Use "not specified" for fields without explicit information
 - Use plain English, no markdown formatting."""
