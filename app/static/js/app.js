@@ -403,11 +403,11 @@ function visualizeAudio(stream) {
 
         analyser.getByteTimeDomainData(dataArray);
 
-        canvasCtx.fillStyle = 'rgb(240, 240, 245)';
+        canvasCtx.fillStyle = 'rgb(244, 242, 255)';  // Direct Care lavender-soft
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
         canvasCtx.lineWidth = 2;
-        canvasCtx.strokeStyle = 'rgb(13, 115, 119)';
+        canvasCtx.strokeStyle = 'rgb(138, 99, 210)';  // Direct Care brand purple
         canvasCtx.beginPath();
 
         const sliceWidth = canvas.width / bufferLength;

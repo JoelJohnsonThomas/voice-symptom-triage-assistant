@@ -1,6 +1,14 @@
-/* Voice Symptom Intake & Documentation Assistant - Styles */
+/* Voice Symptom Intake & Documentation Assistant - Direct Care Theme */
+/* Inspired by DirectCare.ai design system */
 
-/* Reset and Base Styles */
+/* =====================================================
+   FONTS
+   ===================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* =====================================================
+   CSS RESET & BASE STYLES
+   ===================================================== */
 * {
     margin: 0;
     padding: 0;
@@ -8,223 +16,346 @@
 }
 
 :root {
-    /* Healthcare-inspired color palette */
-    --primary-color: #0d7377;
-    --primary-light: #14a9ad;
-    --primary-dark: #094a4d;
-    --secondary-color: #32e0c4;
-    --accent-color: #efefef;
-    --bg-color: #f5f7fa;
-    --card-bg: #ffffff;
-    --text-color: #2c3e50;
-    --text-light: #7f8c8d;
-    --error-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
+    /* Direct Care Brand Colors */
+    --dc-purple: #8A63D2;
+    --dc-purple-dark: #6B4CAF;
+    --dc-purple-light: #A78BDA;
+    --dc-purple-glow: rgba(138, 99, 210, 0.15);
 
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+    /* Accent Colors */
+    --dc-green: #14983A;
+    --dc-green-light: #5CA370;
+    --dc-green-glow: rgba(20, 152, 58, 0.15);
 
-    /* Border radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    /* Backgrounds */
+    --dc-white: #FFFFFF;
+    --dc-lavender-soft: #F4F2FF;
+    --dc-lavender-light: #EDE9FB;
+    --dc-gray-light: #F8F9FA;
+
+    /* Typography */
+    --dc-text-primary: #222222;
+    --dc-text-secondary: #555555;
+    --dc-text-muted: #888888;
+
+    /* Status Colors */
+    --dc-error: #E53E3E;
+    --dc-success: #38A169;
+    --dc-warning: #DD6B20;
+    --dc-info: #3182CE;
+
+    /* Shadows - Direct Care style soft shadows */
+    --shadow-sm: 0 2px 8px rgba(138, 99, 210, 0.08);
+    --shadow-md: 0 4px 16px rgba(138, 99, 210, 0.12);
+    --shadow-lg: 0 8px 32px rgba(138, 99, 210, 0.16);
+    --shadow-purple-glow: 0 0 40px rgba(138, 99, 210, 0.2);
+    --shadow-green-glow: 0 0 30px rgba(20, 152, 58, 0.2);
+
+    /* Border Radius - Direct Care's signature large radius */
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 40px;
+    --radius-xl: 50px;
+    --radius-pill: 999px;
 
     /* Transitions */
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* =====================================================
+   BODY & CONTAINER
+   ===================================================== */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--dc-lavender-soft) 0%, var(--dc-white) 50%, var(--dc-lavender-light) 100%);
     min-height: 100vh;
-    color: var(--text-color);
+    color: var(--dc-text-primary);
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px 20px;
 }
 
-/* Header */
+/* =====================================================
+   HEADER
+   ===================================================== */
 .header {
-    background: var(--card-bg);
-    padding: 30px;
+    background: var(--dc-white);
+    padding: 40px 50px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     margin-bottom: 30px;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(138, 99, 210, 0.1);
 }
 
-.header h1 {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--dc-purple), var(--dc-green), var(--dc-purple));
 }
 
-.subtitle {
-    color: var(--text-light);
-    font-size: 1.1rem;
+/* Logo Container */
+.logo-container {
     margin-bottom: 20px;
 }
 
+.logo {
+    max-width: 250px;
+    height: auto;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--dc-purple);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    color: var(--dc-text-secondary);
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 25px;
+}
+
+/* Compliance Notice */
 .compliance-notice {
-    background: linear-gradient(135deg, #fff3cd, #ffecb5);
-    border-left: 4px solid var(--warning-color);
-    padding: 15px;
+    background: linear-gradient(135deg, #FFF8E1, #FFE0B2);
+    border: 1px solid rgba(221, 107, 32, 0.3);
+    border-left: 4px solid var(--dc-warning);
+    padding: 16px 20px;
     border-radius: var(--radius-sm);
     margin-top: 20px;
     text-align: left;
+    font-size: 0.9rem;
 }
 
 .compliance-notice strong {
-    color: var(--warning-color);
-    display: block;
-    margin-bottom: 5px;
+    color: var(--dc-warning);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-weight: 600;
 }
 
-/* Main Content */
+/* =====================================================
+   MAIN CONTENT
+   ===================================================== */
 .main-content {
     display: grid;
     gap: 30px;
 }
 
-/* Recording Section */
+/* =====================================================
+   RECORDING SECTION - Main Card
+   ===================================================== */
 .recording-section {
-    background: var(--card-bg);
-    padding: 30px;
+    background: var(--dc-white);
+    padding: 40px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(138, 99, 210, 0.08);
 }
 
 .recording-section h2 {
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    font-size: 1.8rem;
+    color: var(--dc-purple);
+    margin-bottom: 30px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.01em;
 }
 
-/* Audio Controls */
+/* =====================================================
+   AUDIO CONTROLS
+   ===================================================== */
 .audio-controls {
     display: flex;
-    gap: 15px;
+    gap: 16px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    justify-content: center;
+    margin-bottom: 24px;
 }
 
-/* Buttons */
+/* =====================================================
+   BUTTONS - Direct Care Style
+   ===================================================== */
 .btn {
-    padding: 12px 24px;
+    padding: 14px 28px;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
     transition: var(--transition);
     box-shadow: var(--shadow-sm);
+    font-family: inherit;
+    letter-spacing: 0.01em;
 }
 
 .btn:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
 
 .btn:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
+    transform: none;
 }
 
+/* Record Button - Red/Coral */
 .btn-record {
-    background: linear-gradient(135deg, var(--error-color), #c05747);
+    background: linear-gradient(135deg, #E53E3E, #C53030);
     color: white;
 }
 
+.btn-record:hover:not(:disabled) {
+    background: linear-gradient(135deg, #C53030, #9B2C2C);
+    box-shadow: 0 8px 24px rgba(229, 62, 62, 0.35);
+}
+
+/* Stop Button - Gray */
 .btn-stop {
-    background: linear-gradient(135deg, var(--text-light), #5f6b6d);
+    background: linear-gradient(135deg, #718096, #4A5568);
     color: white;
 }
 
+.btn-stop:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4A5568, #2D3748);
+    box-shadow: 0 8px 24px rgba(113, 128, 150, 0.35);
+}
+
+/* Play Button - Green */
 .btn-play {
-    background: linear-gradient(135deg, var(--success-color), #1e8449);
+    background: linear-gradient(135deg, var(--dc-green), #0E7A2E);
     color: white;
 }
 
+.btn-play:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0E7A2E, #065F20);
+    box-shadow: var(--shadow-green-glow);
+}
+
+/* Primary Button - Direct Care Purple */
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(135deg, var(--dc-purple), var(--dc-purple-dark));
     color: white;
     width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    margin-top: 20px;
+    padding: 18px 36px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-top: 30px;
+    border-radius: var(--radius-pill);
 }
 
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--dc-purple-dark), #5738A0);
+    box-shadow: var(--shadow-purple-glow);
+}
+
+/* Secondary Button */
 .btn-secondary {
-    background: var(--accent-color);
-    color: var(--text-color);
-    border: 2px solid var(--text-light);
+    background: var(--dc-white);
+    color: var(--dc-purple);
+    border: 2px solid var(--dc-purple);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--dc-lavender-soft);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-icon {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
-/* Audio Visualizer */
+/* =====================================================
+   AUDIO VISUALIZER
+   ===================================================== */
 .audio-visualizer {
-    background: linear-gradient(135deg, #f5f7fa, #e8ecf1);
-    padding: 20px;
+    background: linear-gradient(135deg, var(--dc-lavender-soft), var(--dc-lavender-light));
+    padding: 25px;
     border-radius: var(--radius-md);
-    margin: 20px 0;
+    margin: 25px 0;
     display: flex;
     justify-content: center;
+    border: 1px solid rgba(138, 99, 210, 0.1);
 }
 
 #visualizerCanvas {
     border-radius: var(--radius-sm);
+    background: var(--dc-white);
 }
 
-/* Divider */
+/* =====================================================
+   DIVIDER
+   ===================================================== */
 .divider {
     display: flex;
     align-items: center;
     text-align: center;
-    margin: 30px 0;
-    color: var(--text-light);
+    margin: 35px 0;
+    color: var(--dc-text-muted);
 }
 
 .divider::before,
 .divider::after {
     content: '';
     flex: 1;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--dc-lavender-light);
 }
 
 .divider span {
-    padding: 0 15px;
+    padding: 0 20px;
     font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dc-text-secondary);
+    background: var(--dc-lavender-soft);
+    border-radius: var(--radius-pill);
+    padding: 6px 20px;
 }
 
-/* File Upload */
+/* =====================================================
+   FILE UPLOAD
+   ===================================================== */
 .file-upload {
     text-align: center;
-    padding: 20px;
+    padding: 25px;
 }
 
 .upload-label {
-    display: inline-block;
-    padding: 15px 30px;
-    background: linear-gradient(135deg, var(--secondary-color), #25b39d);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--dc-green), var(--dc-green-light));
     color: white;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     cursor: pointer;
     font-weight: 600;
     transition: var(--transition);
@@ -232,13 +363,13 @@ body {
 }
 
 .upload-label:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-green-glow);
+    background: linear-gradient(135deg, #0E7A2E, var(--dc-green));
 }
 
 .upload-icon {
-    font-size: 1.5rem;
-    margin-right: 10px;
+    font-size: 1.4rem;
 }
 
 .file-input {
@@ -246,78 +377,91 @@ body {
 }
 
 .file-name {
-    margin-top: 15px;
-    color: var(--text-light);
+    margin-top: 16px;
+    color: var(--dc-text-muted);
     font-style: italic;
+    font-size: 0.95rem;
 }
 
-/* Text Input Section */
+/* =====================================================
+   TEXT INPUT SECTION
+   ===================================================== */
 .text-input-section {
     text-align: center;
-    padding: 20px;
+    padding: 25px;
 }
 
 .text-label {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 15px;
+    color: var(--dc-purple);
+    margin-bottom: 18px;
     font-size: 1.1rem;
 }
 
 .text-icon {
     font-size: 1.3rem;
-    margin-right: 8px;
 }
 
 .text-input {
     width: 100%;
-    padding: 15px;
-    border: 2px solid var(--accent-color);
+    padding: 18px 22px;
+    border: 2px solid var(--dc-lavender-light);
     border-radius: var(--radius-md);
     font-size: 1rem;
     font-family: inherit;
     resize: vertical;
     transition: var(--transition);
+    background: var(--dc-white);
 }
 
 .text-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.1);
+    border-color: var(--dc-purple);
+    box-shadow: 0 0 0 4px var(--dc-purple-glow);
 }
 
 .text-input::placeholder {
-    color: var(--text-light);
+    color: var(--dc-text-muted);
     font-style: italic;
 }
 
-/* Results Section */
+/* =====================================================
+   RESULTS SECTION
+   ===================================================== */
 .results-section {
-    background: var(--card-bg);
-    padding: 30px;
+    background: var(--dc-white);
+    padding: 40px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(138, 99, 210, 0.08);
 }
 
 .results-section h2 {
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    font-size: 1.8rem;
+    color: var(--dc-purple);
+    margin-bottom: 30px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
 }
 
-/* Loading Indicator */
+/* =====================================================
+   LOADING INDICATOR
+   ===================================================== */
 .loading {
     text-align: center;
-    padding: 40px;
+    padding: 50px;
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    margin: 0 auto 20px;
-    border: 4px solid var(--accent-color);
-    border-top: 4px solid var(--primary-color);
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 25px;
+    border: 4px solid var(--dc-lavender-light);
+    border-top: 4px solid var(--dc-purple);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -332,15 +476,28 @@ body {
     }
 }
 
-/* Result Cards */
+.loading p {
+    color: var(--dc-text-secondary);
+    font-size: 1.05rem;
+}
+
+/* =====================================================
+   RESULT CARDS
+   ===================================================== */
 .result-card {
-    background: linear-gradient(135deg, #ffffff, #f8f9fa);
-    border: 2px solid var(--accent-color);
+    background: var(--dc-white);
+    border: 2px solid var(--dc-lavender-light);
     border-radius: var(--radius-md);
-    padding: 25px;
-    margin-bottom: 20px;
+    padding: 30px;
+    margin-bottom: 25px;
     box-shadow: var(--shadow-sm);
     animation: slideIn 0.5s ease-out;
+    transition: var(--transition);
+}
+
+.result-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: rgba(138, 99, 210, 0.2);
 }
 
 @keyframes slideIn {
@@ -356,67 +513,92 @@ body {
 }
 
 .result-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 15px;
-    font-size: 1.4rem;
+    color: var(--dc-purple);
+    margin-bottom: 18px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* Transcription */
+/* =====================================================
+   TRANSCRIPTION
+   ===================================================== */
 .transcription-text {
-    background: white;
-    padding: 20px;
+    background: var(--dc-lavender-soft);
+    padding: 22px;
     border-radius: var(--radius-sm);
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid var(--dc-purple);
     font-size: 1.05rem;
-    line-height: 1.7;
+    line-height: 1.8;
     white-space: pre-wrap;
+    color: var(--dc-text-primary);
 }
 
 .duration-info {
-    margin-top: 10px;
-    color: var(--text-light);
+    margin-top: 14px;
+    color: var(--dc-text-muted);
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
-/* Review Notice */
+/* =====================================================
+   REVIEW NOTICE
+   ===================================================== */
 .review-notice {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    border-left: 4px solid var(--primary-color);
-    padding: 15px;
+    background: linear-gradient(135deg, var(--dc-lavender-soft), var(--dc-lavender-light));
+    border: 1px solid rgba(138, 99, 210, 0.2);
+    border-left: 4px solid var(--dc-purple);
+    padding: 18px 22px;
     border-radius: var(--radius-sm);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .review-notice strong {
-    color: var(--primary-color);
-    display: block;
-    margin-bottom: 5px;
+    color: var(--dc-purple);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
-/* Documentation Sections */
+.review-notice p {
+    color: var(--dc-text-secondary);
+    font-size: 0.95rem;
+}
+
+/* =====================================================
+   DOCUMENTATION SECTIONS
+   ===================================================== */
 .doc-section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--accent-color);
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--dc-lavender-light);
 }
 
 .doc-section:last-of-type {
     border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .doc-section h4 {
-    color: var(--primary-dark);
-    margin-bottom: 10px;
-    font-size: 1.2rem;
+    color: var(--dc-purple-dark);
+    margin-bottom: 12px;
+    font-size: 1.15rem;
+    font-weight: 700;
 }
 
 .soap-note {
-    background: white;
-    padding: 20px;
+    background: var(--dc-white);
+    padding: 22px;
     border-radius: var(--radius-sm);
-    border-left: 4px solid var(--secondary-color);
+    border-left: 4px solid var(--dc-green);
     white-space: pre-wrap;
-    line-height: 1.8;
+    line-height: 1.9;
+    border: 1px solid var(--dc-lavender-light);
 }
 
 #symptomDetails ul {
@@ -425,33 +607,44 @@ body {
 }
 
 #symptomDetails li {
-    padding: 8px 0;
-    padding-left: 25px;
+    padding: 10px 0;
+    padding-left: 28px;
     position: relative;
+    color: var(--dc-text-primary);
 }
 
 #symptomDetails li::before {
     content: "▸";
     position: absolute;
     left: 0;
-    color: var(--primary-color);
+    color: var(--dc-purple);
     font-weight: bold;
+    font-size: 1.1rem;
 }
 
-/* Export Buttons */
+#symptomDetails li strong {
+    color: var(--dc-purple-dark);
+}
+
+/* =====================================================
+   EXPORT BUTTONS
+   ===================================================== */
 .export-buttons {
     display: flex;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 16px;
+    margin-top: 25px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
-/* Error Card */
+/* =====================================================
+   ERROR CARD
+   ===================================================== */
 .error-card {
-    background: linear-gradient(135deg, #ffebee, #ffcdd2);
-    border: 2px solid var(--error-color);
+    background: linear-gradient(135deg, #FFF5F5, #FED7D7);
+    border: 2px solid var(--dc-error);
     border-radius: var(--radius-md);
-    padding: 25px;
+    padding: 28px;
     animation: shake 0.5s;
 }
 
@@ -463,39 +656,102 @@ body {
     }
 
     25% {
-        transform: translateX(-10px);
+        transform: translateX(-8px);
     }
 
     75% {
-        transform: translateX(10px);
+        transform: translateX(8px);
     }
 }
 
 .error-card h3 {
-    color: var(--error-color);
+    color: var(--dc-error);
+    font-weight: 700;
 }
 
-/* Footer */
+.error-card p {
+    color: var(--dc-text-primary);
+    margin-top: 10px;
+}
+
+/* =====================================================
+   FOOTER
+   ===================================================== */
 .footer {
-    background: var(--card-bg);
-    padding: 20px;
+    background: var(--dc-white);
+    padding: 30px 40px;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    margin-top: 30px;
+    box-shadow: var(--shadow-md);
+    margin-top: 35px;
     text-align: center;
-    color: var(--text-light);
+    border: 1px solid rgba(138, 99, 210, 0.08);
+}
+
+.footer-logo {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.footer p {
+    color: var(--dc-text-secondary);
+    font-size: 0.95rem;
 }
 
 .footer-disclaimer {
     font-size: 0.85rem;
-    margin-top: 10px;
+    margin-top: 12px;
     font-style: italic;
+    color: var(--dc-text-muted);
 }
 
-/* Responsive Design */
+.footer-links {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--dc-purple);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.footer-links a:hover {
+    color: var(--dc-purple-dark);
+    text-decoration: underline;
+}
+
+/* =====================================================
+   RESPONSIVE DESIGN
+   ===================================================== */
 @media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 30px 25px;
+        border-radius: var(--radius-md);
+    }
+
     .header h1 {
-        font-size: 2rem;
+        font-size: 1.7rem;
+    }
+
+    .logo {
+        max-width: 200px;
+    }
+
+    .recording-section,
+    .results-section {
+        padding: 25px;
+        border-radius: var(--radius-md);
     }
 
     .audio-controls {
@@ -504,22 +760,74 @@ body {
 
     .btn {
         width: 100%;
-        justify-content: center;
+        padding: 16px 24px;
     }
 
     .export-buttons {
         flex-direction: column;
     }
+
+    .result-card {
+        padding: 22px;
+    }
+
+    .footer {
+        padding: 25px;
+        border-radius: var(--radius-md);
+    }
 }
 
-/* Accessibility */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .subtitle {
+        font-size: 0.95rem;
+    }
+
+    .recording-section h2,
+    .results-section h2 {
+        font-size: 1.3rem;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY
+   ===================================================== */
 .btn:focus,
 .upload-label:focus {
-    outline: 3px solid var(--primary-light);
-    outline-offset: 2px;
+    outline: 3px solid var(--dc-purple-light);
+    outline-offset: 3px;
 }
 
-/* Print Styles */
+.text-input:focus-visible {
+    outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --dc-purple: #7748C8;
+        --dc-green: #0D7A2E;
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =====================================================
+   PRINT STYLES
+   ===================================================== */
 @media print {
     body {
         background: white;
@@ -527,7 +835,16 @@ body {
 
     .recording-section,
     .export-buttons,
-    .audio-controls {
+    .audio-controls,
+    .file-upload,
+    .text-input-section,
+    .divider {
         display: none;
+    }
+
+    .results-section,
+    .result-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
     }
 }
