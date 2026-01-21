@@ -156,6 +156,23 @@
                         </p>
                     </div>
 
+                    <!-- Text Input Indicator (shown when text was entered instead of voice) -->
+                    <div id="textInputIndicator" class="text-input-indicator" style="display: none;">
+                        <div class="text-input-header">
+                            <svg class="text-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="4 7 4 4 20 4 20 7" />
+                                <line x1="9" y1="20" x2="15" y2="20" />
+                                <line x1="12" y1="4" x2="12" y2="20" />
+                            </svg>
+                            <span>Text Input</span>
+                            <span class="text-input-badge">Manual Entry</span>
+                        </div>
+                        <p class="text-input-note">
+                            Symptoms were entered via text input. No audio recording available.
+                        </p>
+                    </div>
+
                     <p class="duration-info">Duration: <span id="audioDuration">0</span> seconds</p>
                 </div>
 

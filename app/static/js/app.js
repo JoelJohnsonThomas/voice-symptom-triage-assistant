@@ -36,7 +36,8 @@ const elements = {
     copyBtn: document.getElementById('copyBtn'),
     visualizerCanvas: document.getElementById('visualizerCanvas'),
     audioPlaybackSection: document.getElementById('audioPlaybackSection'),
-    resultAudioPlayer: document.getElementById('resultAudioPlayer')
+    resultAudioPlayer: document.getElementById('resultAudioPlayer'),
+    textInputIndicator: document.getElementById('textInputIndicator')
 };
 
 // Initialize
@@ -260,9 +261,11 @@ function displayResults(data) {
     if (state.audioUrl) {
         elements.resultAudioPlayer.src = state.audioUrl;
         elements.audioPlaybackSection.style.display = 'block';
+        elements.textInputIndicator.style.display = 'none';
     } else {
-        // Hide audio section for text input
+        // Show text input indicator instead of audio player
         elements.audioPlaybackSection.style.display = 'none';
+        elements.textInputIndicator.style.display = 'block';
     }
 
     // Documentation

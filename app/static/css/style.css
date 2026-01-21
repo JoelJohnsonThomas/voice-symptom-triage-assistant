@@ -657,6 +657,51 @@ body {
 }
 
 /* =====================================================
+   TEXT INPUT INDICATOR
+   ===================================================== */
+.text-input-indicator {
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-left: 4px solid #3B82F6;
+    border-radius: var(--radius-sm);
+    padding: 18px 22px;
+    margin-top: 20px;
+}
+
+.text-input-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--dc-text-primary);
+}
+
+.text-input-icon {
+    width: 22px;
+    height: 22px;
+    color: #3B82F6;
+}
+
+.text-input-badge {
+    background: #3B82F6;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
+.text-input-note {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--dc-text-muted);
+    font-style: italic;
+}
+
+/* =====================================================
    REVIEW NOTICE
    ===================================================== */
 .review-notice {
