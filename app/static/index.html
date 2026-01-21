@@ -23,13 +23,22 @@
                     alt="Direct Care AI Logo" class="logo">
             </div>
 
-            <h1>🎙️ Voice Symptom Intake Assistant</h1>
-            <p class="subtitle">Administrative Documentation Support for Direct Care AI</p>
+            <h1>Voice Symptom Intake Assistant</h1>
+            <p class="subtitle">Administrative Documentation Support</p>
 
             <!-- Compliance Notice -->
             <div class="compliance-notice">
-                <strong>⚠️ COMPLIANCE NOTICE:</strong> This system provides administrative documentation support only.
-                It does NOT perform clinical triage, provide medical advice, or make clinical decisions.
+                <strong>
+                    <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    Compliance Notice
+                </strong>
+                This system provides administrative documentation support only.
+                It does not perform clinical triage, provide medical advice, or make clinical decisions.
                 All outputs require review by qualified healthcare professionals.
             </div>
         </header>
@@ -43,15 +52,25 @@
                 <!-- Audio Recording Controls -->
                 <div class="audio-controls">
                     <button id="recordBtn" class="btn btn-record">
-                        <span class="btn-icon">🎤</span>
+                        <svg class="btn-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="23" />
+                            <line x1="8" y1="23" x2="16" y2="23" />
+                        </svg>
                         Start Recording
                     </button>
                     <button id="stopBtn" class="btn btn-stop" disabled>
-                        <span class="btn-icon">⏹️</span>
+                        <svg class="btn-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2" />
+                        </svg>
                         Stop Recording
                     </button>
                     <button id="playBtn" class="btn btn-play" disabled>
-                        <span class="btn-icon">▶️</span>
+                        <svg class="btn-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
                         Play Recording
                     </button>
                 </div>
@@ -69,7 +88,12 @@
                 <!-- File Upload -->
                 <div class="file-upload">
                     <label for="audioFile" class="upload-label">
-                        <span class="upload-icon">📁</span>
+                        <svg class="upload-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
                         Upload Audio File
                     </label>
                     <input type="file" id="audioFile" accept="audio/*" class="file-input">
@@ -84,17 +108,26 @@
                 <!-- Text Input -->
                 <div class="text-input-section">
                     <label for="textInput" class="text-label">
-                        <span class="text-icon">⌨️</span>
+                        <svg class="text-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="4 7 4 4 20 4 20 7" />
+                            <line x1="9" y1="20" x2="15" y2="20" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
                         Type Symptoms Directly
                     </label>
                     <textarea id="textInput" class="text-input"
-                        placeholder="Type patient symptoms here... (e.g., 'I have had a sore throat for 48 hours')"
+                        placeholder="Enter patient symptoms here (e.g., 'Sore throat for 48 hours with mild fever')"
                         rows="4"></textarea>
                 </div>
 
                 <!-- Submit Button -->
                 <button id="submitBtn" class="btn btn-primary" disabled>
-                    Generate Documentation ➜
+                    Generate Documentation
+                    <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
                 </button>
             </section>
 
@@ -105,23 +138,49 @@
                 <!-- Loading Indicator -->
                 <div id="loadingIndicator" class="loading" style="display: none;">
                     <div class="spinner"></div>
-                    <p>Processing audio and generating documentation...</p>
+                    <p>Processing and generating documentation...</p>
                 </div>
 
                 <!-- Transcription -->
                 <div class="result-card" id="transcriptionCard" style="display: none;">
-                    <h3>📝 Transcription</h3>
+                    <h3>
+                        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                        Transcription
+                    </h3>
                     <div id="transcriptionText" class="transcription-text"></div>
                     <p class="duration-info">Duration: <span id="audioDuration">0</span> seconds</p>
                 </div>
 
                 <!-- Documentation -->
                 <div class="result-card" id="documentationCard" style="display: none;">
-                    <h3>📋 Structured Documentation</h3>
+                    <h3>
+                        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 11H3v10h6V11z" />
+                            <path d="M21 3h-6v18h6V3z" />
+                            <path d="M15 7H9v14h6V7z" />
+                        </svg>
+                        Structured Documentation
+                    </h3>
 
                     <!-- Clinician Review Notice -->
                     <div class="review-notice">
-                        <strong>🔍 Requires Clinician Review</strong>
+                        <strong>
+                            <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                            Requires Clinician Review
+                        </strong>
                         <p>This documentation must be reviewed and finalized by a qualified healthcare professional.</p>
                     </div>
 
@@ -139,16 +198,27 @@
 
                     <!-- SOAP Note -->
                     <div class="doc-section">
-                        <h4>SOAP Note - Subjective Section</h4>
+                        <h4>SOAP Note — Subjective Section</h4>
                         <div id="soapNote" class="soap-note"></div>
                     </div>
 
                     <!-- Export Buttons -->
                     <div class="export-buttons">
                         <button id="exportJsonBtn" class="btn btn-secondary">
-                            Export as JSON
+                            <svg class="btn-svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Export JSON
                         </button>
                         <button id="copyBtn" class="btn btn-secondary">
+                            <svg class="btn-svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
                             Copy to Clipboard
                         </button>
                     </div>
@@ -156,7 +226,14 @@
 
                 <!-- Error Display -->
                 <div class="error-card" id="errorCard" style="display: none;">
-                    <h3>❌ Error</h3>
+                    <h3>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                        Error
+                    </h3>
                     <p id="errorText"></p>
                 </div>
             </section>
@@ -166,9 +243,10 @@
         <footer class="footer">
             <img src="https://cdn.prod.website-files.com/67e9a176f4ad60e0a777c24a/67e9a176f4ad60e0a777c2a3_DC%2520logo%2520long%2520trans-p-500.png"
                 alt="Direct Care AI" class="footer-logo">
-            <p>&copy; 2026 Direct Care AI | Voice Symptom Intake & Documentation Assistant v1.0</p>
+            <p class="footer-copyright">&copy; 2026 Direct Care AI. All rights reserved.</p>
+            <p class="footer-version">Voice Symptom Intake & Documentation Assistant v1.0</p>
             <p class="footer-disclaimer">
-                Administrative tool only. Not for clinical decision-making.
+                Administrative documentation tool. Not intended for clinical decision-making.
             </p>
             <div class="footer-links">
                 <a href="https://www.directcare.ai/medical-consent" target="_blank" rel="noopener">Medical Consent</a>
