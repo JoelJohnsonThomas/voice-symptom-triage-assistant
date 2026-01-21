@@ -37,7 +37,9 @@ const elements = {
     errorText: document.getElementById('errorText'),
     exportJsonBtn: document.getElementById('exportJsonBtn'),
     copyBtn: document.getElementById('copyBtn'),
-    visualizerCanvas: document.getElementById('visualizerCanvas')
+    visualizerCanvas: document.getElementById('visualizerCanvas'),
+    audioPlaybackSection: document.getElementById('audioPlaybackSection'),
+    resultAudioPlayer: document.getElementById('resultAudioPlayer')
 };
 
 // Initialize
@@ -276,6 +278,16 @@ function displayResults(data) {
     elements.transcriptionText.textContent = data.transcript;
     elements.audioDuration.textContent = data.duration_seconds.toFixed(1);
     elements.transcriptionCard.style.display = 'block';
+
+    // Audio Playback for Verification (only show if audio was used)
+    if (state.audioUrl || state.uploadedFile) {
+        const audioSource = state.audioUrl || URL.createObjectURL(state.uploadedFile);
+        elements.resultAudioPlayer.src = audioSource;
+        elements.audioPlaybackSection.style.display = 'block';
+    } else {
+        // Hide audio section for text input
+        elements.audioPlaybackSection.style.display = 'none';
+    }
 
     // Documentation
     const doc = data.documentation;

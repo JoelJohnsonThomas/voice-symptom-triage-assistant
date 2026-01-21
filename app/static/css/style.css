@@ -597,6 +597,63 @@ body {
 }
 
 /* =====================================================
+   AUDIO PLAYBACK VERIFICATION
+   ===================================================== */
+.audio-playback-section {
+    background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+    border: 1px solid rgba(20, 152, 58, 0.2);
+    border-left: 4px solid var(--dc-green);
+    border-radius: var(--radius-sm);
+    padding: 18px 22px;
+    margin-top: 20px;
+}
+
+.audio-playback-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    color: var(--dc-text-primary);
+}
+
+.audio-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--dc-green);
+}
+
+.audio-verification-badge {
+    background: var(--dc-green);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
+.audio-player {
+    width: 100%;
+    height: 45px;
+    border-radius: var(--radius-sm);
+    outline: none;
+}
+
+.audio-player::-webkit-media-controls-panel {
+    background: var(--dc-white);
+}
+
+.audio-playback-note {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dc-text-muted);
+    font-style: italic;
+}
+
+/* =====================================================
    REVIEW NOTICE
    ===================================================== */
 .review-notice {

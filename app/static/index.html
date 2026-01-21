@@ -155,6 +155,27 @@
                         Transcription
                     </h3>
                     <div id="transcriptionText" class="transcription-text"></div>
+
+                    <!-- Audio Playback for Verification -->
+                    <div id="audioPlaybackSection" class="audio-playback-section" style="display: none;">
+                        <div class="audio-playback-header">
+                            <svg class="audio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                            </svg>
+                            <span>Original Recording</span>
+                            <span class="audio-verification-badge">For Verification</span>
+                        </div>
+                        <audio id="resultAudioPlayer" controls class="audio-player">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <p class="audio-playback-note">
+                            Listen to the original recording to verify transcription accuracy.
+                        </p>
+                    </div>
+
                     <p class="duration-info">Duration: <span id="audioDuration">0</span> seconds</p>
                 </div>
 
