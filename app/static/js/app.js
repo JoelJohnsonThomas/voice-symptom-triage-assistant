@@ -232,7 +232,7 @@ async function processInput() {
             formData.append('text', textContent);
         }
 
-        const response = await fetch('/api/process', {
+        const response = await fetch('/api/voice-intake', {
             method: 'POST',
             body: formData
         });
