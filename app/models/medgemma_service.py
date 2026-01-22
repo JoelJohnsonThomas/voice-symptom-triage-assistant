@@ -170,6 +170,8 @@ class MedGemmaService:
             'vomiting': ['vomiting', 'vomit', 'throwing up', 'threw up'],
             'fever': ['fever', 'temperature', 'febrile', 'running a fever'],
             'chills': ['chills', 'chilly', 'shivering'],
+            'cold': ['cold', 'common cold', 'caught a cold', 'have a cold', 'got a cold'],
+            'runny nose': ['runny nose', 'nose running', 'running nose', 'sneezing', 'sniffles'],
             'cough': ['cough', 'coughing'],
             'dizziness': ['dizzy', 'dizziness', 'lightheaded', 'light headed', 'room spinning'],
             'fatigue': ['fatigue', 'tired', 'exhausted', 'no energy', 'feeling weak'],

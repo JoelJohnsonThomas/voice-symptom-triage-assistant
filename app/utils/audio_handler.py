@@ -11,6 +11,9 @@ import numpy as np
 from pathlib import Path
 from typing import Tuple, BinaryIO
 import logging
+import tempfile
+import subprocess
+import shutil
 
 from app.config import settings
 
@@ -20,7 +23,7 @@ logger = logging.getLogger(__name__)
 class AudioHandler:
     """Handler for audio file operations."""
     
-    SUPPORTED_FORMATS = ['.wav', '.mp3', '.m4a', '.flac', '.ogg']
+    SUPPORTED_FORMATS = ['.wav', '.mp3', '.m4a', '.flac', '.ogg', '.webm']
     
     @staticmethod
     def validate_audio_file(file_path: str) -> bool:
@@ -46,6 +49,51 @@ class AudioHandler:
         return True
     
     @staticmethod
+    def convert_webm_to_wav(input_path: str) -> str:
+        """
+        Convert WebM to WAV using FFmpeg.
+        
+        Args:
+            input_path: Path to WebM file
+            
+        Returns:
+            Path to converted WAV file
+        """
+        # Check if ffmpeg is available
+        ffmpeg_path = shutil.which('ffmpeg')
+        if not ffmpeg_path:
+            raise RuntimeError("FFmpeg not found. Please install FFmpeg for WebM support.")
+        
+        # Create temp WAV file
+        output_path = input_path.replace('.webm', '.wav')
+        if output_path == input_path:
+            output_path = input_path + '.wav'
+        
+        logger.info(f"Converting WebM to WAV: {input_path} -> {output_path}")
+        
+        try:
+            result = subprocess.run([
+                'ffmpeg', '-y', '-i', input_path,
+                '-acodec', 'pcm_s16le',
+                '-ar', str(settings.audio_sample_rate),
+                '-ac', '1',  # Mono
+                output_path
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode != 0:
+                logger.error(f"FFmpeg error: {result.stderr}")
+                raise RuntimeError(f"FFmpeg conversion failed: {result.stderr}")
+            
+            logger.info("WebM to WAV conversion successful")
+            return output_path
+            
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("FFmpeg conversion timed out")
+        except Exception as e:
+            logger.error(f"Conversion failed: {e}")
+            raise
+    
+    @staticmethod
     def load_audio(
         file_path: str = None,
         file_bytes: bytes = None,
@@ -65,11 +113,19 @@ class AudioHandler:
         if target_sr is None:
             target_sr = settings.audio_sample_rate
         
+        converted_path = None
+        
         try:
             if file_path:
                 logger.info(f"Loading audio from file: {file_path}")
-                # Use soundfile for standard WAV files
-                audio, sr = sf.read(file_path, dtype='float32')
+                
+                # Handle WebM format by converting to WAV first
+                if file_path.lower().endswith('.webm'):
+                    converted_path = AudioHandler.convert_webm_to_wav(file_path)
+                    audio, sr = sf.read(converted_path, dtype='float32')
+                else:
+                    # Use soundfile for standard formats
+                    audio, sr = sf.read(file_path, dtype='float32')
                 
             elif file_bytes:
                 logger.info("Loading audio from bytes")
@@ -110,6 +166,13 @@ class AudioHandler:
         except Exception as e:
             logger.error(f"Failed to load audio: {e}")
             raise
+        finally:
+            # Cleanup converted file
+            if converted_path and Path(converted_path).exists():
+                try:
+                    Path(converted_path).unlink()
+                except:
+                    pass
     
     @staticmethod
     def save_audio(audio: np.ndarray, sr: int, output_path: str):
