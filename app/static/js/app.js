@@ -327,24 +327,29 @@ function displayResults(data) {
         elements.chiefComplaint.textContent = doc.chief_complaint || 'N/A';
     }
 
-    // Symptom Details
+    // Symptom Details - Map backend field names to display
     if (elements.symptomDetails && doc.symptom_details) {
         const details = doc.symptom_details;
+        // symptoms_mentioned is an array, join for display
+        const symptomsText = Array.isArray(details.symptoms_mentioned)
+            ? details.symptoms_mentioned.join(', ')
+            : (details.symptoms_mentioned || 'not specified');
+
         elements.symptomDetails.innerHTML = `
             <ul>
-                <li><strong>Symptoms:</strong> ${details.symptoms || 'not specified'}</li>
+                <li><strong>Symptoms:</strong> ${symptomsText}</li>
                 <li><strong>Onset:</strong> ${details.onset || 'not specified'}</li>
                 <li><strong>Duration:</strong> ${details.duration || 'not specified'}</li>
                 <li><strong>Location:</strong> ${details.location || 'not specified'}</li>
-                <li><strong>Quality:</strong> ${details.quality || 'not specified'}</li>
-                <li><strong>Severity:</strong> ${details.severity || 'not specified'}</li>
+                <li><strong>Aggravating Factors:</strong> ${details.aggravating_factors || 'not specified'}</li>
+                <li><strong>Severity:</strong> ${details.severity_description || 'not specified'}</li>
             </ul>
         `;
     }
 
-    // SOAP Note
+    // SOAP Note - Backend uses soap_note_subjective
     if (elements.soapNote) {
-        elements.soapNote.textContent = doc.soap_subjective || 'Patient describes symptoms.';
+        elements.soapNote.textContent = doc.soap_note_subjective || 'Patient describes symptoms.';
     }
 }
 
