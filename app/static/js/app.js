@@ -395,11 +395,18 @@ function visualizeAudio(stream) {
 
         analyser.getByteTimeDomainData(dataArray);
 
-        canvasCtx.fillStyle = 'rgb(244, 242, 255)';  // Theme lavender-soft
-        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        // Clear with transparent background (or match container)
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-        canvasCtx.lineWidth = 2;
-        canvasCtx.strokeStyle = 'rgb(138, 99, 210)';  // Theme brand purple
+        // Create gradient
+        const gradient = canvasCtx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, '#6366f1'); // Electric Indigo
+        gradient.addColorStop(1, '#06b6d4'); // Cyan
+
+        canvasCtx.lineWidth = 3;
+        canvasCtx.strokeStyle = gradient;
+        canvasCtx.lineCap = 'round';
+        canvasCtx.lineJoin = 'round';
         canvasCtx.beginPath();
 
         const sliceWidth = canvas.width / bufferLength;
@@ -412,6 +419,10 @@ function visualizeAudio(stream) {
             if (i === 0) {
                 canvasCtx.moveTo(x, y);
             } else {
+                // Smooth curve
+                const xc = (x + (x + sliceWidth)) / 2;
+                const yc = (y + (dataArray[i + 1] / 128.0 * canvas.height / 2)) / 2;
+                // Simple line for performance, could use quadraticCurveTo for smoothness
                 canvasCtx.lineTo(x, y);
             }
 
