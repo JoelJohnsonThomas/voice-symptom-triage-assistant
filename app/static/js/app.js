@@ -66,6 +66,157 @@ const state = {
 };
 
 // =====================================================
+// SETTINGS & NEURAL CONFIG
+// =====================================================
+function setupSettings() {
+    // Theme Switching
+    const themeCards = document.querySelectorAll('.theme-card');
+    const body = document.body;
+
+    // Load saved settings
+    const savedTheme = localStorage.getItem('voxdoc_theme') || 'glass';
+    applyTheme(savedTheme);
+
+    const savedSound = localStorage.getItem('voxdoc_sound') === 'true';
+    document.getElementById('soundToggle').checked = savedSound;
+
+    themeCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const theme = card.dataset.theme;
+            applyTheme(theme);
+            saveSettings('voxdoc_theme', theme);
+        });
+    });
+
+    // Neural Graph Animation
+    setupNeuralGraph();
+
+    // Sliders
+    setupSliders();
+
+    // Settings Toggle (add to sidebar)
+    const settingsBtn = document.querySelector('[data-tab="settings"]');
+    const dashboardBtn = document.querySelector('[data-tab="dashboard"]');
+
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            document.querySelector('.main-content > .content-grid').classList.add('hidden');
+            document.getElementById('settingsView').classList.remove('hidden');
+        });
+    }
+
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', () => {
+            document.querySelector('.main-content > .content-grid').classList.remove('hidden');
+            document.getElementById('settingsView').classList.add('hidden');
+        });
+    }
+}
+
+function applyTheme(theme) {
+    document.body.className = ''; // Reset
+    if (theme !== 'glass') {
+        document.body.classList.add(`theme-${theme}`);
+    }
+
+    // Update UI active state
+    document.querySelectorAll('.theme-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.theme === theme);
+    });
+}
+
+function saveSettings(key, value) {
+    localStorage.setItem(key, value);
+}
+
+function setupSliders() {
+    const sliders = [
+        { id: 'depthSlider', display: 'depthValue', unit: '%' },
+        { id: 'empathySlider', display: 'empathyValue', map: { 1: 'Low', 2: 'Medium', 3: 'High' } },
+        { id: 'particleSlider', display: null } // Just visual
+    ];
+
+    sliders.forEach(s => {
+        const el = document.getElementById(s.id);
+        const display = s.display ? document.getElementById(s.display) : null;
+
+        if (el) {
+            el.addEventListener('input', (e) => {
+                if (display) {
+                    if (s.map) {
+                        display.textContent = s.map[e.target.value];
+                    } else {
+                        display.textContent = e.target.value + (s.unit || '');
+                    }
+                }
+            });
+        }
+    });
+
+    // Sound toggle
+    document.getElementById('soundToggle').addEventListener('change', (e) => {
+        saveSettings('voxdoc_sound', e.target.checked);
+    });
+}
+
+function setupNeuralGraph() {
+    const canvas = document.getElementById('neuralGraph');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    // Resize handling
+    const resizeObserver = new ResizeObserver(() => {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    });
+    resizeObserver.observe(canvas.parentElement);
+
+    // Animation loop
+    const dataPoints = new Array(50).fill(0);
+
+    function draw() {
+        if (document.getElementById('settingsView').classList.contains('hidden')) {
+            requestAnimationFrame(draw);
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update data
+        dataPoints.shift();
+        dataPoints.push(Math.random() * 0.8 + 0.1); // Random activity
+
+        // Draw line
+        ctx.beginPath();
+        const step = canvas.width / (dataPoints.length - 1);
+
+        dataPoints.forEach((val, i) => {
+            const x = i * step;
+            const y = canvas.height - (val * canvas.height * 0.8) - 10;
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+
+        ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--violet-500');
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Add glow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.stroke();
+        ctx.shadowBlur = 0; // Reset
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+}
+
+// =====================================================
 // INITIALIZATION
 // =====================================================
 function init() {
@@ -74,6 +225,7 @@ function init() {
     setupTextInput();
     setupSubmit();
     setupActions();
+    setupSettings(); // Add settings init
 }
 
 // =====================================================
