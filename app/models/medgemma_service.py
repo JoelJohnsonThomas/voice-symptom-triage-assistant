@@ -142,6 +142,14 @@ class MedGemmaService:
         # Symptom mapping: canonical name -> variations to search for
         # CRITICAL: Ordered by specificity (longer/more specific terms first)
         symptom_map = {
+            # General illness phrases (capture vague descriptions)
+            'feeling sick': ['feeling sick', 'feel sick', 'feels sick', 'felt sick', 'i am sick', "i'm sick",
+                            'not feeling well', "don't feel well", "doesn't feel well", 'feeling unwell',
+                            'under the weather', 'coming down with something', 'got sick'],
+            'feeling weak': ['feeling weak', 'feel weak', 'feeling faint', 'weak', 'malaise'],
+            'not feeling right': ['not feeling right', "something's wrong", 'feel off', 'feeling off',
+                                  'something wrong', 'not right', 'feel bad', 'feeling bad', 'felt bad'],
+            
             # Multi-word symptoms (check first - more specific)
             'shortness of breath': ['shortness of breath', 'short of breath', 'difficulty breathing', 
                                     'hard to breathe', "can't breathe", "can't catch my breath"],
@@ -195,8 +203,16 @@ class MedGemmaService:
                     confirmed_symptoms.remove('pain')
                     break
         
-        # Build chief complaint from confirmed symptoms only
-        chief_complaint = ", ".join(confirmed_symptoms[:3]) if confirmed_symptoms else "not clearly specified"
+        # Build chief complaint from confirmed symptoms
+        # FALLBACK: If no symptoms detected, use the cleaned transcript (patient's own words)
+        if confirmed_symptoms:
+            chief_complaint = ", ".join(confirmed_symptoms[:3])
+        else:
+            # Use original transcript as chief complaint if it's short enough
+            if len(transcript.strip()) <= 100:
+                chief_complaint = transcript.strip().capitalize()
+            else:
+                chief_complaint = transcript.strip()[:100].capitalize() + "..."
         
         # Word-to-number mapping for duration parsing
         # Only convert unambiguous number words, keep "few/several/couple" as-is
