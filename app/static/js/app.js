@@ -224,18 +224,27 @@ async function processInput() {
     showLoading();
 
     try {
-        const formData = new FormData();
+        let response;
 
         if (hasAudio) {
+            // Voice input: Use /api/voice-intake with FormData
+            const formData = new FormData();
             formData.append('audio', state.audioBlob, 'recording.webm');
-        } else {
-            formData.append('text', textContent);
-        }
 
-        const response = await fetch('/api/voice-intake', {
-            method: 'POST',
-            body: formData
-        });
+            response = await fetch('/api/voice-intake', {
+                method: 'POST',
+                body: formData
+            });
+        } else {
+            // Text input: Use /api/document with JSON
+            response = await fetch('/api/document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ transcript: textContent })
+            });
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -243,6 +252,13 @@ async function processInput() {
         }
 
         const data = await response.json();
+
+        // Normalize response format (text endpoint doesn't include transcript)
+        if (!hasAudio) {
+            data.transcript = textContent;
+            data.duration_seconds = 0;
+        }
+
         state.currentDocumentation = data;
         displayResults(data);
 
