@@ -71,14 +71,14 @@ const state = {
 function setupSettings() {
     // Theme Switching
     const themeCards = document.querySelectorAll('.theme-card');
-    const body = document.body;
 
     // Load saved settings
     const savedTheme = localStorage.getItem('voxdoc_theme') || 'glass';
     applyTheme(savedTheme);
 
     const savedSound = localStorage.getItem('voxdoc_sound') === 'true';
-    document.getElementById('soundToggle').checked = savedSound;
+    const soundToggle = document.getElementById('soundToggle');
+    if (soundToggle) soundToggle.checked = savedSound;
 
     themeCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -93,24 +93,6 @@ function setupSettings() {
 
     // Sliders
     setupSliders();
-
-    // Settings Toggle (add to sidebar)
-    const settingsBtn = document.querySelector('[data-tab="settings"]');
-    const dashboardBtn = document.querySelector('[data-tab="dashboard"]');
-
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-            document.querySelector('.main-content > .content-grid').classList.add('hidden');
-            document.getElementById('settingsView').classList.remove('hidden');
-        });
-    }
-
-    if (dashboardBtn) {
-        dashboardBtn.addEventListener('click', () => {
-            document.querySelector('.main-content > .content-grid').classList.remove('hidden');
-            document.getElementById('settingsView').classList.add('hidden');
-        });
-    }
 }
 
 function applyTheme(theme) {
