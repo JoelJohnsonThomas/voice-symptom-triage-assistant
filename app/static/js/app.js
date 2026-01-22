@@ -162,8 +162,9 @@ function handleTextInput(event) {
     // Enable submit if there's text
     if (text.length > 0) {
         elements.submitBtn.disabled = false;
-        // Clear audio state when typing
+        // Clear audio state when typing (both blob and URL)
         state.audioBlob = null;
+        state.audioUrl = null;
     } else if (!state.audioBlob) {
         elements.submitBtn.disabled = true;
     }
