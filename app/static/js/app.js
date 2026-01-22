@@ -220,29 +220,65 @@ function setupNeuralGraph() {
 // INITIALIZATION
 // =====================================================
 function init() {
-    setupSidebar();
+    setupNavigation();
     setupRecording();
     setupTextInput();
     setupSubmit();
     setupActions();
-    setupSettings(); // Add settings init
+    setupSettings();
 }
 
 // =====================================================
-// SIDEBAR
+// NAVIGATION & SIDEBAR
 // =====================================================
-function setupSidebar() {
+function setupNavigation() {
+    // Sidebar Toggles
     elements.openSidebarBtn?.addEventListener('click', openSidebar);
     elements.closeSidebarBtn?.addEventListener('click', closeSidebar);
     elements.sidebarOverlay?.addEventListener('click', closeSidebar);
 
-    // Nav items
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
+    // Navigation Tabs
+    const dashboardBtn = document.querySelector('[data-tab="dashboard"]');
+    const settingsBtn = document.querySelector('[data-tab="settings"]');
+    const historyBtn = document.querySelector('[data-tab="history"]');
+
+    // Views
+    const contentView = document.querySelector('.content-grid');
+    const settingsView = document.getElementById('settingsView');
+
+    function setActiveTab(activeBtn) {
+        [dashboardBtn, settingsBtn, historyBtn].forEach(btn => {
+            if (btn) btn.classList.remove('active');
         });
-    });
+        if (activeBtn) activeBtn.classList.add('active');
+        closeSidebar(); // Auto close on mobile
+    }
+
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', () => {
+            setActiveTab(dashboardBtn);
+            if (contentView) contentView.classList.remove('hidden');
+            if (settingsView) settingsView.classList.add('hidden');
+        });
+    }
+
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            setActiveTab(settingsBtn);
+            if (contentView) contentView.classList.add('hidden');
+            if (settingsView) settingsView.classList.remove('hidden');
+            // Re-draw graph if needed
+            setupNeuralGraph();
+        });
+    }
+
+    // History placeholder
+    if (historyBtn) {
+        historyBtn.addEventListener('click', () => {
+            setActiveTab(historyBtn);
+            alert('History feature coming soon in v2.0');
+        });
+    }
 }
 
 function openSidebar() {
