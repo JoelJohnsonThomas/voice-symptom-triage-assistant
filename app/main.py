@@ -80,6 +80,26 @@ class VoiceIntakeResponse(BaseModel):
     compliance_notice: str
 
 
+# Startup event to preload models
+@app.on_event("startup")
+async def startup_event():
+    """Preload ML models at server startup."""
+    logger.info("🚀 Starting model preload...")
+    try:
+        logger.info("Loading MedASR model...")
+        medasr = get_medasr_service()
+        logger.info(f"✅ MedASR ready: {medasr.is_ready()}")
+        
+        logger.info("Loading MedGemma model...")
+        medgemma = get_medgemma_service()
+        logger.info(f"✅ MedGemma ready: {medgemma.is_ready()}")
+        
+        logger.info("🎉 All models loaded successfully!")
+    except Exception as e:
+        logger.error(f"❌ Model preload failed: {e}")
+        # Don't crash - allow lazy loading as fallback
+
+
 # Health check endpoint
 @app.get("/api/health")
 async def health_check():
