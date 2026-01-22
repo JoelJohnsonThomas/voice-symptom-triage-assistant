@@ -1,4 +1,4 @@
-/* Voice Symptom Intake & Documentation Assistant - Direct Care Theme */
+/* Voice Symptom Intake & Documentation Assistant - Medical Theme */
 /* Inspired by DirectCare.ai design system */
 
 /* =====================================================
@@ -16,7 +16,7 @@
 }
 
 :root {
-    /* Direct Care Brand Colors */
+    /* Theme Colors */
     --dc-purple: #8A63D2;
     --dc-purple-dark: #6B4CAF;
     --dc-purple-light: #A78BDA;
@@ -44,14 +44,14 @@
     --dc-warning: #DD6B20;
     --dc-info: #3182CE;
 
-    /* Shadows - Direct Care style soft shadows */
+    /* Shadows - Soft style shadows */
     --shadow-sm: 0 2px 8px rgba(138, 99, 210, 0.08);
     --shadow-md: 0 4px 16px rgba(138, 99, 210, 0.12);
     --shadow-lg: 0 8px 32px rgba(138, 99, 210, 0.16);
     --shadow-purple-glow: 0 0 40px rgba(138, 99, 210, 0.2);
     --shadow-green-glow: 0 0 30px rgba(20, 152, 58, 0.2);
 
-    /* Border Radius - Direct Care's signature large radius */
+    /* Border Radius - Signature large radius */
     --radius-sm: 12px;
     --radius-md: 20px;
     --radius-lg: 40px;
@@ -110,12 +110,31 @@ body {
 
 /* Logo Container */
 .logo-container {
-    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    padding: 10px 25px;
+    background: rgba(138, 99, 210, 0.05);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(138, 99, 210, 0.1);
 }
 
-.logo {
-    max-width: 250px;
-    height: auto;
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--dc-purple);
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dc-purple-dark);
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--dc-purple), var(--dc-purple-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .header h1 {
@@ -194,7 +213,7 @@ body {
 }
 
 /* =====================================================
-   BUTTONS - Direct Care Style
+   BUTTONS - Medical Style
    ===================================================== */
 .btn {
     padding: 14px 28px;
@@ -261,7 +280,7 @@ body {
     box-shadow: var(--shadow-green-glow);
 }
 
-/* Primary Button - Direct Care Purple */
+/* Primary Button - Theme Purple */
 .btn-primary {
     background: linear-gradient(135deg, var(--dc-purple), var(--dc-purple-dark));
     color: white;
@@ -854,11 +873,25 @@ body {
     border: 1px solid rgba(138, 99, 210, 0.08);
 }
 
-.footer-logo {
-    max-width: 160px;
-    height: auto;
-    margin-bottom: 18px;
-    opacity: 0.95;
+.footer-branding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.footer-logo-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--dc-purple);
+}
+
+.footer-logo-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dc-purple);
 }
 
 .footer p {
