@@ -1,83 +1,123 @@
 /**
- * Voice Symptom Intake & Documentation Assistant - Frontend Logic
- * 
- * Handles audio recording, file upload, API communication, and results display.
+ * VoxDoc - Voice Symptom Intake & Documentation Assistant
+ * Dark Theme Edition - JavaScript Controller
  */
 
-// State management
+// =====================================================
+// DOM ELEMENTS
+// =====================================================
+const elements = {
+    // Sidebar
+    sidebar: document.getElementById('sidebar'),
+    sidebarOverlay: document.getElementById('sidebarOverlay'),
+    openSidebarBtn: document.getElementById('openSidebar'),
+    closeSidebarBtn: document.getElementById('closeSidebar'),
+
+    // Voice Recording
+    recordBtn: document.getElementById('recordBtn'),
+    recordRipple: document.getElementById('recordRipple'),
+    micIcon: document.getElementById('micIcon'),
+    stopIcon: document.getElementById('stopIcon'),
+    waveformContainer: document.getElementById('waveformContainer'),
+    voiceStatus: document.getElementById('voiceStatus'),
+    durationDisplay: document.getElementById('durationDisplay'),
+    recordingTime: document.getElementById('recordingTime'),
+
+    // Text Input
+    textInput: document.getElementById('textInput'),
+
+    // Submit
+    submitBtn: document.getElementById('submitBtn'),
+
+    // Transcript Panel
+    transcriptCard: document.getElementById('transcriptCard'),
+    transcriptTitle: document.getElementById('transcriptTitle'),
+    liveIndicator: document.getElementById('liveIndicator'),
+    emptyState: document.getElementById('emptyState'),
+    loadingState: document.getElementById('loadingState'),
+    resultsContainer: document.getElementById('resultsContainer'),
+
+    // Results
+    transcriptionText: document.getElementById('transcriptionText'),
+    chiefComplaint: document.getElementById('chiefComplaint'),
+    symptomDetails: document.getElementById('symptomDetails'),
+    soapNote: document.getElementById('soapNote'),
+    audioPlaybackSection: document.getElementById('audioPlaybackSection'),
+    resultAudioPlayer: document.getElementById('resultAudioPlayer'),
+    textInputIndicator: document.getElementById('textInputIndicator'),
+
+    // Actions
+    copyBtn: document.getElementById('copyBtn'),
+    exportBtn: document.getElementById('exportBtn')
+};
+
+// =====================================================
+// STATE
+// =====================================================
 const state = {
+    isRecording: false,
     mediaRecorder: null,
     audioChunks: [],
     audioBlob: null,
     audioUrl: null,
-    isRecording: false,
-    textInput: ''  // Text input state
+    recordingStartTime: null,
+    recordingInterval: null,
+    currentDocumentation: null
 };
 
-// DOM elements
-const elements = {
-    recordBtn: document.getElementById('recordBtn'),
-    stopBtn: document.getElementById('stopBtn'),
-    playBtn: document.getElementById('playBtn'),
-    submitBtn: document.getElementById('submitBtn'),
-    textInput: document.getElementById('textInput'),  // Text input element
-    resultsSection: document.getElementById('resultsSection'),
-    loadingIndicator: document.getElementById('loadingIndicator'),
-    transcriptionCard: document.getElementById('transcriptionCard'),
-    documentationCard: document.getElementById('documentationCard'),
-    errorCard: document.getElementById('errorCard'),
-    transcriptionText: document.getElementById('transcriptionText'),
-    audioDuration: document.getElementById('audioDuration'),
-    chiefComplaint: document.getElementById('chiefComplaint'),
-    symptomDetails: document.getElementById('symptomDetails'),
-    soapNote: document.getElementById('soapNote'),
-    errorText: document.getElementById('errorText'),
-    exportJsonBtn: document.getElementById('exportJsonBtn'),
-    copyBtn: document.getElementById('copyBtn'),
-    visualizerCanvas: document.getElementById('visualizerCanvas'),
-    audioPlaybackSection: document.getElementById('audioPlaybackSection'),
-    resultAudioPlayer: document.getElementById('resultAudioPlayer'),
-    textInputIndicator: document.getElementById('textInputIndicator')
-};
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    initializeEventListeners();
-    checkApiHealth();
-});
-
-/**
- * Initialize all event listeners
- */
-function initializeEventListeners() {
-    elements.recordBtn.addEventListener('click', startRecording);
-    elements.stopBtn.addEventListener('click', stopRecording);
-    elements.playBtn.addEventListener('click', playRecording);
-    elements.submitBtn.addEventListener('click', submitForDocumentation);
-    elements.exportJsonBtn.addEventListener('click', exportAsJson);
-    elements.copyBtn.addEventListener('click', copyToClipboard);
-
-    // Text input listener
-    elements.textInput.addEventListener('input', handleTextInput);
+// =====================================================
+// INITIALIZATION
+// =====================================================
+function init() {
+    setupSidebar();
+    setupRecording();
+    setupTextInput();
+    setupSubmit();
+    setupActions();
 }
 
-/**
- * Check API health status
- */
-async function checkApiHealth() {
-    try {
-        const response = await fetch('/api/health');
-        const data = await response.json();
-        console.log('API Health:', data);
-    } catch (error) {
-        console.error('API health check failed:', error);
-        showError('Unable to connect to backend services. Please ensure the server is running.');
+// =====================================================
+// SIDEBAR
+// =====================================================
+function setupSidebar() {
+    elements.openSidebarBtn?.addEventListener('click', openSidebar);
+    elements.closeSidebarBtn?.addEventListener('click', closeSidebar);
+    elements.sidebarOverlay?.addEventListener('click', closeSidebar);
+
+    // Nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+        });
+    });
+}
+
+function openSidebar() {
+    elements.sidebar?.classList.add('open');
+    elements.sidebarOverlay?.classList.add('active');
+}
+
+function closeSidebar() {
+    elements.sidebar?.classList.remove('open');
+    elements.sidebarOverlay?.classList.remove('active');
+}
+
+// =====================================================
+// RECORDING
+// =====================================================
+function setupRecording() {
+    elements.recordBtn?.addEventListener('click', toggleRecording);
+}
+
+async function toggleRecording() {
+    if (state.isRecording) {
+        stopRecording();
+    } else {
+        await startRecording();
     }
 }
 
-/**
- * Start audio recording
- */
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -85,420 +125,277 @@ async function startRecording() {
         state.mediaRecorder = new MediaRecorder(stream);
         state.audioChunks = [];
 
-        state.mediaRecorder.ondataavailable = (event) => {
-            state.audioChunks.push(event.data);
+        state.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+                state.audioChunks.push(e.data);
+            }
         };
 
-        state.mediaRecorder.onstop = async () => {
-            // Create a blob from recorded chunks (this is WebM/Opus format)
-            const webmBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
-
-            // Convert to WAV using Web Audio API
-            const arrayBuffer = await webmBlob.arrayBuffer();
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-            // Convert AudioBuffer to WAV
-            state.audioBlob = audioBufferToWav(audioBuffer);
+        state.mediaRecorder.onstop = () => {
+            state.audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
             state.audioUrl = URL.createObjectURL(state.audioBlob);
-
-            // Enable playback and submit buttons
-            elements.playBtn.disabled = false;
-            elements.submitBtn.disabled = false;
-
-            // Stop all audio tracks
             stream.getTracks().forEach(track => track.stop());
+            updateSubmitButton();
         };
 
-        state.mediaRecorder.start();
+        state.mediaRecorder.start(100);
         state.isRecording = true;
+        state.recordingStartTime = Date.now();
 
-        // Update UI
-        elements.recordBtn.disabled = true;
-        elements.stopBtn.disabled = false;
-        elements.recordBtn.textContent = '🔴 Recording...';
+        // UI Updates
+        elements.recordBtn?.classList.add('recording');
+        elements.micIcon?.classList.add('hidden');
+        elements.stopIcon?.classList.remove('hidden');
+        elements.waveformContainer?.classList.add('recording');
+        elements.recordRipple?.classList.add('active');
+        elements.voiceStatus.textContent = 'Listening and transcribing...';
+        elements.durationDisplay?.classList.remove('hidden');
 
-        // Start visualizer
-        visualizeAudio(stream);
+        // Start timer
+        state.recordingInterval = setInterval(updateRecordingTime, 1000);
 
     } catch (error) {
-        console.error('Error starting recording:', error);
-        showError('Unable to access microphone. Please check permissions.');
+        console.error('Microphone access denied:', error);
+        alert('Microphone access is required for voice recording.');
     }
 }
 
-/**
- * Stop audio recording
- */
 function stopRecording() {
     if (state.mediaRecorder && state.isRecording) {
         state.mediaRecorder.stop();
         state.isRecording = false;
 
-        // Update UI
-        elements.recordBtn.disabled = false;
-        elements.stopBtn.disabled = true;
-        elements.recordBtn.innerHTML = '<span class="btn-icon">🎤</span> Start Recording';
+        // UI Updates
+        elements.recordBtn?.classList.remove('recording');
+        elements.micIcon?.classList.remove('hidden');
+        elements.stopIcon?.classList.add('hidden');
+        elements.waveformContainer?.classList.remove('recording');
+        elements.recordRipple?.classList.remove('active');
+        elements.voiceStatus.textContent = 'Recording complete. Ready to generate documentation.';
+
+        // Stop timer
+        clearInterval(state.recordingInterval);
     }
 }
 
-/**
- * Play recorded audio
- */
-function playRecording() {
-    if (state.audioUrl) {
-        const audio = new Audio(state.audioUrl);
-        audio.play();
+function updateRecordingTime() {
+    if (!state.recordingStartTime) return;
+
+    const elapsed = Math.floor((Date.now() - state.recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const seconds = (elapsed % 60).toString().padStart(2, '0');
+
+    if (elements.recordingTime) {
+        elements.recordingTime.textContent = `${minutes}:${seconds}`;
     }
 }
 
-/**
- * Handle text input
- */
-function handleTextInput(event) {
-    const text = event.target.value.trim();
-    state.textInput = text;
+// =====================================================
+// TEXT INPUT
+// =====================================================
+function setupTextInput() {
+    elements.textInput?.addEventListener('input', () => {
+        updateSubmitButton();
+    });
+}
 
-    // Enable submit if there's text
-    if (text.length > 0) {
-        elements.submitBtn.disabled = false;
-        // Clear audio state when typing (both blob and URL)
-        state.audioBlob = null;
-        state.audioUrl = null;
-    } else if (!state.audioBlob) {
-        elements.submitBtn.disabled = true;
+function updateSubmitButton() {
+    const hasAudio = state.audioBlob !== null;
+    const hasText = elements.textInput?.value.trim().length > 0;
+
+    if (elements.submitBtn) {
+        elements.submitBtn.disabled = !(hasAudio || hasText);
     }
 }
 
-/**
- * Submit audio or text for documentation
- */
-async function submitForDocumentation() {
-    // Determine input source: text first, then audio
-    const textToSubmit = state.textInput;
-    const audioToSubmit = state.audioBlob;
+// =====================================================
+// SUBMIT & PROCESSING
+// =====================================================
+function setupSubmit() {
+    elements.submitBtn?.addEventListener('click', processInput);
+}
 
-    if (!textToSubmit && !audioToSubmit) {
-        showError('Please record audio or type symptoms.');
-        return;
-    }
+async function processInput() {
+    const hasAudio = state.audioBlob !== null;
+    const textContent = elements.textInput?.value.trim();
 
-    // Show loading, hide previous results
-    elements.resultsSection.style.display = 'block';
-    elements.loadingIndicator.style.display = 'block';
-    elements.transcriptionCard.style.display = 'none';
-    elements.documentationCard.style.display = 'none';
-    elements.errorCard.style.display = 'none';
+    if (!hasAudio && !textContent) return;
+
+    showLoading();
 
     try {
-        let data;
+        const formData = new FormData();
 
-        if (textToSubmit) {
-            // Text input mode - call document endpoint directly
-            const response = await fetch('/api/document', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ transcript: textToSubmit })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Request failed');
-            }
-
-            const docData = await response.json();
-
-            // Format as voice-intake style response
-            data = {
-                transcript: textToSubmit,
-                documentation: docData.documentation,
-                duration_seconds: 0,  // No audio duration for text
-                requires_clinician_review: docData.requires_clinician_review,
-                compliance_notice: docData.compliance_notice
-            };
+        if (hasAudio) {
+            formData.append('audio', state.audioBlob, 'recording.webm');
         } else {
-            // Audio mode - call voice-intake endpoint
-            const formData = new FormData();
-            formData.append('audio', audioToSubmit, 'recording.wav');
-
-            const response = await fetch('/api/voice-intake', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Request failed');
-            }
-
-            data = await response.json();
+            formData.append('text', textContent);
         }
 
-        // Hide loading
-        elements.loadingIndicator.style.display = 'none';
+        const response = await fetch('/api/process', {
+            method: 'POST',
+            body: formData
+        });
 
-        // Display results
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Processing failed');
+        }
+
+        const data = await response.json();
+        state.currentDocumentation = data;
         displayResults(data);
 
     } catch (error) {
-        console.error('Error:', error);
-        elements.loadingIndicator.style.display = 'none';
-        showError(error.message || 'Failed to process input. Please try again.');
+        console.error('Processing error:', error);
+        showError(error.message);
     }
 }
 
-/**
- * Display documentation results
- */
-function displayResults(data) {
-    // Transcription
-    elements.transcriptionText.textContent = data.transcript;
-    elements.audioDuration.textContent = data.duration_seconds.toFixed(1);
-    elements.transcriptionCard.style.display = 'block';
+// =====================================================
+// UI STATE MANAGEMENT
+// =====================================================
+function showLoading() {
+    elements.emptyState?.classList.add('hidden');
+    elements.resultsContainer?.classList.add('hidden');
+    elements.loadingState?.classList.remove('hidden');
+    elements.transcriptTitle.textContent = 'Processing...';
+}
 
-    // Audio Playback for Verification (only show if recorded audio was used)
-    if (state.audioUrl) {
-        elements.resultAudioPlayer.src = state.audioUrl;
-        elements.audioPlaybackSection.style.display = 'block';
-        elements.textInputIndicator.style.display = 'none';
-    } else {
-        // Show text input indicator instead of audio player
-        elements.audioPlaybackSection.style.display = 'none';
-        elements.textInputIndicator.style.display = 'block';
+function showResults() {
+    elements.emptyState?.classList.add('hidden');
+    elements.loadingState?.classList.add('hidden');
+    elements.resultsContainer?.classList.remove('hidden');
+    elements.transcriptTitle.textContent = 'Documentation Results';
+}
+
+function showError(message) {
+    elements.loadingState?.classList.add('hidden');
+    elements.transcriptTitle.textContent = 'Error';
+
+    // Create error display
+    const errorHtml = `
+        <div style="padding: 20px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; color: #dc2626;">
+            <strong>Error:</strong> ${message}
+        </div>
+    `;
+
+    if (elements.resultsContainer) {
+        elements.resultsContainer.innerHTML = errorHtml;
+        elements.resultsContainer.classList.remove('hidden');
+    }
+}
+
+function displayResults(data) {
+    showResults();
+
+    // Transcription
+    if (elements.transcriptionText) {
+        elements.transcriptionText.textContent = data.transcript;
     }
 
-    // Documentation
+    // Audio Playback (only for voice input)
+    if (state.audioUrl && elements.audioPlaybackSection && elements.resultAudioPlayer) {
+        elements.resultAudioPlayer.src = state.audioUrl;
+        elements.audioPlaybackSection.classList.remove('hidden');
+        elements.textInputIndicator?.classList.add('hidden');
+    } else {
+        elements.audioPlaybackSection?.classList.add('hidden');
+        elements.textInputIndicator?.classList.remove('hidden');
+    }
+
+    // Documentation fields
     const doc = data.documentation;
 
-    // Chief Complaint
-    elements.chiefComplaint.textContent = doc.chief_complaint || 'N/A';
+    if (elements.chiefComplaint) {
+        elements.chiefComplaint.textContent = doc.chief_complaint || 'N/A';
+    }
 
     // Symptom Details
-    if (doc.symptom_details) {
+    if (elements.symptomDetails && doc.symptom_details) {
         const details = doc.symptom_details;
-        let html = '<ul>';
-
-        if (details.symptoms_mentioned) {
-            html += '<li><strong>Symptoms:</strong> ' + details.symptoms_mentioned.join(', ') + '</li>';
-        }
-        if (details.onset) {
-            html += '<li><strong>Onset:</strong> ' + details.onset + '</li>';
-        }
-        if (details.duration) {
-            html += '<li><strong>Duration:</strong> ' + details.duration + '</li>';
-        }
-        if (details.location) {
-            html += '<li><strong>Location:</strong> ' + details.location + '</li>';
-        }
-        if (details.quality) {
-            html += '<li><strong>Quality:</strong> ' + details.quality + '</li>';
-        }
-        if (details.severity_description) {
-            html += '<li><strong>Severity (patient description):</strong> ' + details.severity_description + '</li>';
-        }
-        if (details.associated_symptoms && details.associated_symptoms.length > 0) {
-            html += '<li><strong>Associated Symptoms:</strong> ' + details.associated_symptoms.join(', ') + '</li>';
-        }
-
-        html += '</ul>';
-        elements.symptomDetails.innerHTML = html;
+        elements.symptomDetails.innerHTML = `
+            <ul>
+                <li><strong>Symptoms:</strong> ${details.symptoms || 'not specified'}</li>
+                <li><strong>Onset:</strong> ${details.onset || 'not specified'}</li>
+                <li><strong>Duration:</strong> ${details.duration || 'not specified'}</li>
+                <li><strong>Location:</strong> ${details.location || 'not specified'}</li>
+                <li><strong>Quality:</strong> ${details.quality || 'not specified'}</li>
+                <li><strong>Severity:</strong> ${details.severity || 'not specified'}</li>
+            </ul>
+        `;
     }
 
     // SOAP Note
-    elements.soapNote.textContent = doc.soap_note_subjective || 'N/A';
-
-    // Store data for export
-    window.currentDocumentation = data;
-
-    elements.documentationCard.style.display = 'block';
-}
-
-/**
- * Show error message
- */
-function showError(message) {
-    elements.errorText.textContent = message;
-    elements.errorCard.style.display = 'block';
-    elements.resultsSection.style.display = 'block';
-}
-
-/**
- * Export documentation as JSON
- */
-function exportAsJson() {
-    if (!window.currentDocumentation) {
-        alert('No documentation to export');
-        return;
+    if (elements.soapNote) {
+        elements.soapNote.textContent = doc.soap_subjective || 'Patient describes symptoms.';
     }
-
-    const dataStr = JSON.stringify(window.currentDocumentation, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'symptom_documentation_' + new Date().getTime() + '.json';
-    link.click();
-
-    URL.revokeObjectURL(url);
 }
 
-/**
- * Copy documentation to clipboard
- */
+// =====================================================
+// ACTIONS (Copy, Export)
+// =====================================================
+function setupActions() {
+    elements.copyBtn?.addEventListener('click', copyToClipboard);
+    elements.exportBtn?.addEventListener('click', exportJSON);
+}
+
 async function copyToClipboard() {
-    if (!window.currentDocumentation) {
-        alert('No documentation to copy');
-        return;
-    }
+    if (!state.currentDocumentation) return;
 
-    const doc = window.currentDocumentation.documentation;
+    const doc = state.currentDocumentation.documentation;
+    const text = `
+CHIEF COMPLAINT: ${doc.chief_complaint}
 
-    let text = '=== VOICE SYMPTOM INTAKE DOCUMENTATION ===\n\n';
-    text += 'COMPLIANCE NOTICE: Administrative documentation only. Requires clinician review.\n\n';
-    text += 'CHIEF COMPLAINT:\n' + (doc.chief_complaint || 'N/A') + '\n\n';
-    text += 'SOAP NOTE - SUBJECTIVE:\n' + (doc.soap_note_subjective || 'N/A') + '\n\n';
-    text += 'TRANSCRIPTION:\n' + window.currentDocumentation.transcript + '\n';
+SYMPTOM DETAILS:
+- Symptoms: ${doc.symptom_details?.symptoms || 'N/A'}
+- Onset: ${doc.symptom_details?.onset || 'N/A'}
+- Duration: ${doc.symptom_details?.duration || 'N/A'}
+- Location: ${doc.symptom_details?.location || 'N/A'}
+
+SOAP NOTE (Subjective):
+${doc.soap_subjective}
+    `.trim();
 
     try {
         await navigator.clipboard.writeText(text);
-        alert('Documentation copied to clipboard!');
+
+        // Visual feedback
+        const originalSvg = elements.copyBtn.innerHTML;
+        elements.copyBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+        `;
+        elements.copyBtn.style.color = '#10b981';
+
+        setTimeout(() => {
+            elements.copyBtn.innerHTML = originalSvg;
+            elements.copyBtn.style.color = '';
+        }, 2000);
+
     } catch (error) {
-        console.error('Failed to copy:', error);
-        alert('Failed to copy to clipboard');
+        console.error('Copy failed:', error);
     }
 }
 
-/**
- * Visualize audio waveform
- */
-function visualizeAudio(stream) {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const microphone = audioContext.createMediaStreamSource(stream);
+function exportJSON() {
+    if (!state.currentDocumentation) return;
 
-    microphone.connect(analyser);
-    analyser.fftSize = 256;
+    const dataStr = JSON.stringify(state.currentDocumentation, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const canvas = elements.visualizerCanvas;
-    const canvasCtx = canvas.getContext('2d');
-
-    function draw() {
-        if (!state.isRecording) return;
-
-        requestAnimationFrame(draw);
-
-        analyser.getByteTimeDomainData(dataArray);
-
-        // Clear with transparent background (or match container)
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Create gradient
-        const gradient = canvasCtx.createLinearGradient(0, 0, canvas.width, 0);
-        gradient.addColorStop(0, '#6366f1'); // Electric Indigo
-        gradient.addColorStop(1, '#06b6d4'); // Cyan
-
-        canvasCtx.lineWidth = 3;
-        canvasCtx.strokeStyle = gradient;
-        canvasCtx.lineCap = 'round';
-        canvasCtx.lineJoin = 'round';
-        canvasCtx.beginPath();
-
-        const sliceWidth = canvas.width / bufferLength;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-            const v = dataArray[i] / 128.0;
-            const y = v * canvas.height / 2;
-
-            if (i === 0) {
-                canvasCtx.moveTo(x, y);
-            } else {
-                // Smooth curve
-                const xc = (x + (x + sliceWidth)) / 2;
-                const yc = (y + (dataArray[i + 1] / 128.0 * canvas.height / 2)) / 2;
-                // Simple line for performance, could use quadraticCurveTo for smoothness
-                canvasCtx.lineTo(x, y);
-            }
-
-            x += sliceWidth;
-        }
-
-        canvasCtx.lineTo(canvas.width, canvas.height / 2);
-        canvasCtx.stroke();
-    }
-
-    draw();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `voxdoc_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
-/**
- * Convert AudioBuffer to WAV blob
- */
-function audioBufferToWav(audioBuffer) {
-    const numChannels = 1; // Force mono
-    const sampleRate = audioBuffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-
-    // Get audio data from first channel (or mix down to mono)
-    let audioData;
-    if (audioBuffer.numberOfChannels === 1) {
-        audioData = audioBuffer.getChannelData(0);
-    } else {
-        // Mix down to mono by averaging channels
-        const left = audioBuffer.getChannelData(0);
-        const right = audioBuffer.getChannelData(1);
-        audioData = new Float32Array(left.length);
-        for (let i = 0; i < left.length; i++) {
-            audioData[i] = (left[i] + right[i]) / 2;
-        }
-    }
-
-    const dataLength = audioData.length * (bitDepth / 8);
-    const buffer = new ArrayBuffer(44 + dataLength);
-    const view = new DataView(buffer);
-
-    // Write WAV header
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true); // fmt chunk size
-    view.setUint16(20, format, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * numChannels * (bitDepth / 8), true); // byte rate
-    view.setUint16(32, numChannels * (bitDepth / 8), true); // block align
-    view.setUint16(34, bitDepth, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, dataLength, true);
-
-    // Write audio data
-    floatTo16BitPCM(view, 44, audioData);
-
-    return new Blob([view], { type: 'audio/wav' });
-}
-
-/**
- * Helper function to write string to DataView
- */
-function writeString(view, offset, string) {
-    for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-    }
-}
-
-/**
- * Helper function to convert float32 to 16-bit PCM
- */
-function floatTo16BitPCM(view, offset, input) {
-    for (let i = 0; i < input.length; i++, offset += 2) {
-        const s = Math.max(-1, Math.min(1, input[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    }
-}
+// =====================================================
+// INITIALIZE
+// =====================================================
+document.addEventListener('DOMContentLoaded', init);
