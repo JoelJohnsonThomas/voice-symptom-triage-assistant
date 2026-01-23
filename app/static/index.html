@@ -248,99 +248,7 @@
                     </button>
                 </div>
 
-                <!-- Settings View (Hidden by default) -->
-                <div id="settingsView" class="settings-view hidden">
-                    <div class="settings-header">
-                        <h2>Neural Config</h2>
-                        <div class="neural-badge">
-                            <span class="pulse-dot"></span>
-                            SYSTEM ACTIVE
-                        </div>
-                    </div>
 
-                    <div class="settings-grid">
-                        <!-- Theme Matrix -->
-                        <div class="settings-card full-width">
-                            <h3>Holo-Theme Matrix</h3>
-                            <div class="theme-options">
-                                <div class="theme-card active" data-theme="glass">
-                                    <div class="theme-preview glass"></div>
-                                    <span>Clinical Glass</span>
-                                </div>
-                                <div class="theme-card" data-theme="neon">
-                                    <div class="theme-preview neon"></div>
-                                    <span>Neon Cyber</span>
-                                </div>
-                                <div class="theme-card" data-theme="midnight">
-                                    <div class="theme-preview midnight"></div>
-                                    <span>Midnight Void</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AI Temperament -->
-                        <div class="settings-card">
-                            <h3>AI Temperament</h3>
-                            <div class="slider-group">
-                                <label>
-                                    <span>Analysis Depth</span>
-                                    <span id="depthValue" class="value-display">85%</span>
-                                </label>
-                                <input type="range" id="depthSlider" min="1" max="100" value="85" class="neural-slider">
-                            </div>
-                            <div class="slider-group">
-                                <label>
-                                    <span>Empathy Level</span>
-                                    <span id="empathyValue" class="value-display">High</span>
-                                </label>
-                                <input type="range" id="empathySlider" min="1" max="3" value="3" class="neural-slider">
-                            </div>
-                        </div>
-
-                        <!-- Neural Link Status -->
-                        <div class="settings-card">
-                            <h3>Neural Link Status</h3>
-                            <div class="neural-graph-container">
-                                <canvas id="neuralGraph"></canvas>
-                                <div class="graph-overlay">
-                                    <div class="stat-item">
-                                        <span class="label">LATENCY</span>
-                                        <span class="val">12ms</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="label">GPU</span>
-                                        <span class="val">ACTIVE</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Haptics & Feedback -->
-                        <div class="settings-card full-width">
-                            <h3>Sensory Feedback</h3>
-                            <div class="toggles-row">
-                                <div class="toggle-item">
-                                    <div class="toggle-info">
-                                        <span class="toggle-label">Particle Intensity</span>
-                                        <span class="toggle-desc">Ambient background activity</span>
-                                    </div>
-                                    <input type="range" id="particleSlider" min="0" max="100" value="70"
-                                        class="neural-slider small">
-                                </div>
-                                <div class="toggle-item">
-                                    <div class="toggle-info">
-                                        <span class="toggle-label">Interface Sounds</span>
-                                        <span class="toggle-desc">Haptic audio feedback</span>
-                                    </div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="soundToggle" checked>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Right Column: Live Transcript / Results -->
                 <div class="transcript-column">
@@ -457,6 +365,99 @@
                         <div class="transcript-footer">
                             <p class="disclaimer">Administrative documentation tool. Not for clinical decision-making.
                             </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Settings View (Hidden by default) -->
+            <div id="settingsView" class="settings-view hidden">
+                <div class="settings-header">
+                    <h2>Neural Config</h2>
+                    <div class="neural-badge">
+                        <span class="pulse-dot"></span>
+                        SYSTEM ACTIVE
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- Theme Matrix -->
+                    <div class="settings-card full-width">
+                        <h3>Holo-Theme Matrix</h3>
+                        <div class="theme-options">
+                            <div class="theme-card active" data-theme="glass">
+                                <div class="theme-preview glass"></div>
+                                <span>Clinical Glass</span>
+                            </div>
+                            <div class="theme-card" data-theme="neon">
+                                <div class="theme-preview neon"></div>
+                                <span>Neon Cyber</span>
+                            </div>
+                            <div class="theme-card" data-theme="midnight">
+                                <div class="theme-preview midnight"></div>
+                                <span>Midnight Void</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Temperament -->
+                    <div class="settings-card">
+                        <h3>AI Temperament</h3>
+                        <div class="slider-group">
+                            <label>
+                                <span>Analysis Depth</span>
+                                <span id="depthValue" class="value-display">85%</span>
+                            </label>
+                            <input type="range" id="depthSlider" min="1" max="100" value="85" class="neural-slider">
+                        </div>
+                        <div class="slider-group">
+                            <label>
+                                <span>Empathy Level</span>
+                                <span id="empathyValue" class="value-display">High</span>
+                            </label>
+                            <input type="range" id="empathySlider" min="1" max="3" value="3" class="neural-slider">
+                        </div>
+                    </div>
+
+                    <!-- Neural Link Status -->
+                    <div class="settings-card">
+                        <h3>Neural Link Status</h3>
+                        <div class="neural-graph-container">
+                            <canvas id="neuralGraph"></canvas>
+                            <div class="graph-overlay">
+                                <div class="stat-item">
+                                    <span class="label">LATENCY</span>
+                                    <span class="val">12ms</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="label">GPU</span>
+                                    <span class="val">ACTIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Haptics & Feedback -->
+                    <div class="settings-card full-width">
+                        <h3>Sensory Feedback</h3>
+                        <div class="toggles-row">
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="toggle-label">Particle Intensity</span>
+                                    <span class="toggle-desc">Ambient background activity</span>
+                                </div>
+                                <input type="range" id="particleSlider" min="0" max="100" value="70"
+                                    class="neural-slider small">
+                            </div>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="toggle-label">Interface Sounds</span>
+                                    <span class="toggle-desc">Haptic audio feedback</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="soundToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
